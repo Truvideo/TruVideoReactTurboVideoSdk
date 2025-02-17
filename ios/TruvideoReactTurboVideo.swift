@@ -9,12 +9,13 @@ import Foundation
 import TruvideoSdkVideo
 import Foundation
 import UIKit
+import React
 
 @objc(TruVideoReactVideoSdk)
 class TruVideoReactVideoSdk: NSObject {
     
   
-  @objc func getResultPath(path: String) {
+  @objc func getResultPath(path: String,resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
         let fileManager = FileManager.default
 
         do {
@@ -24,17 +25,17 @@ class TruVideoReactVideoSdk: NSObject {
                 try fileManager.createDirectory(at: outputFolderURL, withIntermediateDirectories: true, attributes: nil)
             }
             let resultPath = outputFolderURL.appendingPathComponent(path).path
-          //  resolve(resultPath)
+            resolve(resultPath)
         } catch {
             // Handle errors and reject the promise
             let error = NSError(domain: "com.yourdomain.yourapp", code: 500, userInfo: [NSLocalizedDescriptionKey: "Failed to get document directory path"])
-           // reject("no_path", "There is no result path", error)
+            reject("no_path", "There is no result path", error)
         }
     }
 
     
    
-  @objc func compareVideos(videos:[String]) {
+  @objc func compareVideos(videos:[String],resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
         let urlArray: [URL] = createUrlArray(videos: videos)
         Task{
             do {
@@ -45,15 +46,15 @@ class TruVideoReactVideoSdk: NSObject {
                 
                 // Check if the videos can be concatenated using TruvideoSdkVideo
                 let isConcat = try await TruvideoSdkVideo.canConcat(input: inputUrl)
-                //resolve(isConcat)
+                resolve(isConcat)
             } catch {
                 // If an error occurs, return false indicating concatenation is not possible
-                //reject("json_error", "Error parsing JSON", error)
+                reject("json_error", "Error parsing JSON", error)
             }
         }
     }
     
-  @objc func getVideoInfo(videos: String) {
+  @objc func getVideoInfo(videos: String,resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
         Task {
             do {
                 let urlArray: [URL] = [convertStringToURL(videos)]
@@ -63,9 +64,9 @@ class TruVideoReactVideoSdk: NSObject {
                 }
                 // Call TruvideoSdkVideo to retrieve information about the videos
                 let result = try await TruvideoSdkVideo.getVideosInformation(input: inputUrl)
-                //resolve(result.description)
+                resolve(result.description)
             } catch {
-              //  reject("json_error", "Error parsing JSON", error)
+                reject("json_error", "Error parsing JSON", error)
                 // Handle any errors that might occur during the process
             }
         }
@@ -86,7 +87,7 @@ class TruVideoReactVideoSdk: NSObject {
     }
     
     
-  @objc func generateThumbnail(videoURL: String,outputURL: String,position: String,width: String,height: String)  {
+  @objc func generateThumbnail(videoURL: String,outputURL: String,position: String,width: String,height: String,resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock)  {
         if let positionTime = Double(position){
             Task{
                 do {
@@ -94,10 +95,10 @@ class TruVideoReactVideoSdk: NSObject {
                     let outputPath :TruvideoSdkVideoFileDescriptor =  .files(fileName: outputURL)
                     // Generate a thumbnail for the provided video using TruvideoSdkVideo's thumbnailGenerator
                     let thumbnail = try await TruvideoSdkVideo.generateThumbnail(input: inputPath, output: outputPath, position: positionTime, width: Int(width), height: Int(height))
-                   // resolve(thumbnail.generatedThumbnailURL.absoluteString)
+                    resolve(thumbnail.generatedThumbnailURL.absoluteString)
                     // Handle result - thumbnail.generatedThumbnailURL
                 } catch {
-                   // reject("json_error", "Error parsing JSON", error)
+                    reject("json_error", "Error parsing JSON", error)
                     // Handle any errors that occur during the thumbnail generation process
                 }
             }
@@ -107,7 +108,7 @@ class TruVideoReactVideoSdk: NSObject {
     
     
     
-  @objc func cleanNoise(video: String, output: String)  {
+  @objc func cleanNoise(video: String, output: String,resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock)  {
         let videoUrl = convertStringToURL(video)
         let outputUrl = convertStringToURL(output)
         Task{
@@ -116,16 +117,16 @@ class TruVideoReactVideoSdk: NSObject {
                 let outputPath :TruvideoSdkVideoFileDescriptor =  .files(fileName: outputUrl.absoluteString)
                 // Attempt to clean noise from the input video file using TruvideoSdkVideo's engine
                 let result = try await TruvideoSdkVideo.engine.clearNoiseForFile(input: inputPath, output: outputPath)
-                //resolve(result.fileURL.absoluteString)
+                resolve(result.fileURL.absoluteString)
             } catch {
-              //  reject("json_error", "Error parsing JSON", error)
+                reject("json_error", "Error parsing JSON", error)
                 // Handle any errors that occur during the noise cleaning process
             }
         }
         
     }
 
-  @objc func concatVideos(videos: [String], output: String) {
+  @objc func concatVideos(videos: [String], output: String,resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
         Task{
             do {
                 let videoUrl = createUrlArray(videos: videos)
@@ -143,7 +144,7 @@ class TruVideoReactVideoSdk: NSObject {
                 let result = builder.build()
                 do{
                     let output = try? await result.process()
-                   // resolve(output?.videoURL.absoluteString)
+                    resolve(output?.videoURL.absoluteString)
                     await print("Successfully concatenated", output?.videoURL.absoluteString)
                 }
                 
@@ -152,14 +153,14 @@ class TruVideoReactVideoSdk: NSObject {
         
     }
     
-  @objc func mergeVideos(videos: [String], output: String,config : String) {
+  @objc func mergeVideos(videos: [String], output: String,config : String,resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
         // Create a MergeBuilder instance with specified parameters
         Task{
             let videoUrl = self.createUrlArray(videos: videos)
             let outputUrl = self.convertStringToURL(output)
             guard let data = config.data(using: .utf8) else {
                 print("Invalid JSON string")
-               // reject("json_error", "Invalid JSON string", nil)
+                reject("json_error", "Invalid JSON string", nil)
                 return
             }
             do {
@@ -194,21 +195,21 @@ class TruVideoReactVideoSdk: NSObject {
                     let result = builder.build()
                     do {
                         if let output = try? await result.process() {
-                          //  resolve(output.videoURL.absoluteString)
+                            resolve(output.videoURL.absoluteString)
                             await print("Successfully concatenated", output.videoURL.absoluteString ?? "")
                         } else {
-                          //  reject("process_error", "Failed to process video merge", nil)
+                            reject("process_error", "Failed to process video merge", nil)
                         }
                     } catch {
-                       // reject("process_error", "Failed to process video merge: \(error.localizedDescription)", error)
+                        reject("process_error", "Failed to process video merge: \(error.localizedDescription)", error)
                     }
                 } else {
                     print("Invalid JSON format")
-                  //  reject("json_error", "Invalid JSON format", nil)
+                    reject("json_error", "Invalid JSON format", nil)
                 }
             } catch {
                 print("JSON parsing error: \(error.localizedDescription)")
-               // reject("json_error", "JSON parsing error: \(error.localizedDescription)", error)
+                reject("json_error", "JSON parsing error: \(error.localizedDescription)", error)
             }
             
             
@@ -245,14 +246,14 @@ class TruVideoReactVideoSdk: NSObject {
 //    }
     
   
-  @objc func changeEncoding(video: String,output: String,config :String) {
+  @objc func changeEncoding(video: String,output: String,config :String,resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
         // Create a EncodingBuilder instance with specified parameters
         Task{
             let videoUrl = self.convertStringToURL(video)
             let outputUrl = convertStringToURL(output)
             guard let data = config.data(using: .utf8) else {
                 print("Invalid JSON string")
-               // reject("json_error", "Invalid JSON string", nil)
+                reject("json_error", "Invalid JSON string", nil)
                 return
             }
             do {
@@ -278,23 +279,23 @@ class TruVideoReactVideoSdk: NSObject {
                         let result = builder.build()
                         do{
                             let output = try? await result.process()
-                           // resolve(output?.videoURL.absoluteString)
+                            resolve(output?.videoURL.absoluteString)
                             await print("Successfully concatenated", output?.videoURL.absoluteString)
                         }
                     } else {
                         print("Invalid JSON format")
-                       // reject("json_error", "Invalid JSON format", nil)
+                        reject("json_error", "Invalid JSON format", nil)
                     }
                 }
             }catch {
                 print("Error parsing JSON: \(error.localizedDescription)")
-                //reject("json_error", "Error parsing JSON", error)
+                reject("json_error", "Error parsing JSON", error)
             }
             
         }
     }
 
-  @objc func editVideo(video : String,output : String){
+  @objc func editVideo(video : String,output : String,resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock){
         DispatchQueue.main.async{
             guard let rootViewController = UIApplication.shared.keyWindow?.rootViewController else {
                 print("E_NO_ROOT_VIEW_CONTROLLER", "No root view controller found")
@@ -305,7 +306,7 @@ class TruVideoReactVideoSdk: NSObject {
             let inputPath : TruvideoSdkVideoFile = .init(url: videoUrl)
             let outputPath :TruvideoSdkVideoFileDescriptor =  .files(fileName: outputUrl.absoluteString)
             rootViewController.presentTruvideoSdkVideoEditorView(input: inputPath, output: outputPath, onComplete: {editionResult in
-                //resolve(editionResult.editedVideoURL?.absoluteString)
+                resolve(editionResult.editedVideoURL?.absoluteString)
                 print("Successfully edited", editionResult.editedVideoURL?.absoluteString)
             })
         }
