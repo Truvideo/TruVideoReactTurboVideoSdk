@@ -91,8 +91,10 @@ import React
         if let positionTime = Double(position){
             Task{
                 do {
-                    let inputPath : TruvideoSdkVideoFile = try .init(path: videoURL)
-                    let outputPath :TruvideoSdkVideoFileDescriptor =  .files(fileName: outputURL)
+                    let videoUrl = self.convertStringToURL(videoURL)
+                    let inputPath : TruvideoSdkVideoFile = try .init(url: videoUrl)
+                    let outputUrl = self.convertStringToURL(outputURL)
+                    let outputPath :TruvideoSdkVideoFileDescriptor =  .custom(rawPath: outputUrl.absoluteString)
                     // Generate a thumbnail for the provided video using TruvideoSdkVideo's thumbnailGenerator
                     let thumbnail = try await TruvideoSdkVideo.generateThumbnail(input: inputPath, output: outputPath, position: positionTime, width: Int(width), height: Int(height))
                     resolve(thumbnail.generatedThumbnailURL.absoluteString)
@@ -136,7 +138,7 @@ import React
                 for url in videoUrl {
                     inputUrl.append(.init(url: url))
                 }
-                let outputPath :TruvideoSdkVideoFileDescriptor =  .files(fileName: outputUrl.absoluteString)
+                let outputPath :TruvideoSdkVideoFileDescriptor =  .custom(rawPath: outputUrl.absoluteString)
 
                 // Concatenate the videos using ConcatBuilder
                 let builder = TruvideoSdkVideo.ConcatBuilder(input: inputUrl, output: outputPath)
@@ -187,7 +189,7 @@ import React
                     for url in videoUrl {
                         inputUrl.append(.init(url: url))
                     }
-                    let outputPath :TruvideoSdkVideoFileDescriptor =  .files(fileName: outputUrl.absoluteString)
+                    let outputPath :TruvideoSdkVideoFileDescriptor =  .custom(rawPath: outputUrl.absoluteString)
                     let builder = TruvideoSdkVideo.MergeBuilder(input: inputUrl, output: outputPath)
                     builder.width = width
                     builder.height = height
@@ -196,10 +198,11 @@ import React
                     do {
                         if let output = try? await result.process() {
                             resolve(output.videoURL.absoluteString)
-                            await print("Successfully concatenated", output.videoURL.absoluteString ?? "")
-                        } else {
-                            reject("process_error", "Failed to process video merge", nil)
+                            await print("Successfully merge", output.videoURL.absoluteString ?? "")
                         }
+//                        } else{
+//                            reject("process_error", "Failed to process video merge", )
+//                        }
                     } catch {
                         reject("process_error", "Failed to process video merge: \(error.localizedDescription)", error)
                     }
@@ -304,7 +307,7 @@ import React
             let videoUrl = self.convertStringToURL(video)
             let outputUrl = self.convertStringToURL(output)
             let inputPath : TruvideoSdkVideoFile = .init(url: videoUrl)
-            let outputPath :TruvideoSdkVideoFileDescriptor =  .files(fileName: outputUrl.absoluteString)
+            let outputPath :TruvideoSdkVideoFileDescriptor =  .custom(rawPath: outputUrl.absoluteString)
             rootViewController.presentTruvideoSdkVideoEditorView(input: inputPath, output: outputPath, onComplete: {editionResult in
                 resolve(editionResult.editedVideoURL?.absoluteString)
                 print("Successfully edited", editionResult.editedVideoURL?.absoluteString)
