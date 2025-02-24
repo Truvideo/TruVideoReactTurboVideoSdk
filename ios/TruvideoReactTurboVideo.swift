@@ -11,11 +11,11 @@ import Foundation
 import UIKit
 import React
 
-@objc(TruVideoReactVideoSdk)
-class TruVideoReactVideoSdk: NSObject {
+
+@objc public class TruVideoReactVideoSdkClass: NSObject {
     
   
-  @objc func getResultPath(path: String,resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
+  @objc public func getResultPath(path: String,resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
         let fileManager = FileManager.default
 
         do {
@@ -35,7 +35,7 @@ class TruVideoReactVideoSdk: NSObject {
 
     
    
-  @objc func compareVideos(videos:[String],resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
+  @objc public func compareVideos(videos:[String],resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
         let urlArray: [URL] = createUrlArray(videos: videos)
         Task{
             do {
@@ -54,7 +54,7 @@ class TruVideoReactVideoSdk: NSObject {
         }
     }
     
-  @objc func getVideoInfo(videos: String,resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
+  @objc public func getVideoInfo(videos: String,resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
         Task {
             do {
                 let urlArray: [URL] = [convertStringToURL(videos)]
@@ -87,7 +87,7 @@ class TruVideoReactVideoSdk: NSObject {
     }
     
     
-  @objc func generateThumbnail(videoURL: String,outputURL: String,position: String,width: String,height: String,resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock)  {
+  @objc public func generateThumbnail(videoURL: String,outputURL: String,position: String,width: String,height: String,resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock)  {
         if let positionTime = Double(position){
             Task{
                 do {
@@ -108,7 +108,7 @@ class TruVideoReactVideoSdk: NSObject {
     
     
     
-  @objc func cleanNoise(video: String, output: String,resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock)  {
+  @objc public func cleanNoise(video: String, output: String,resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock)  {
         let videoUrl = convertStringToURL(video)
         let outputUrl = convertStringToURL(output)
         Task{
@@ -126,7 +126,7 @@ class TruVideoReactVideoSdk: NSObject {
         
     }
 
-  @objc func concatVideos(videos: [String], output: String,resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
+  @objc public func concatVideos(videos: [String], output: String,resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
         Task{
             do {
                 let videoUrl = createUrlArray(videos: videos)
@@ -153,7 +153,7 @@ class TruVideoReactVideoSdk: NSObject {
         
     }
     
-  @objc func mergeVideos(videos: [String], output: String,config : String,resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
+  @objc public func mergeVideos(videos: [String], output: String,config : String,resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
         // Create a MergeBuilder instance with specified parameters
         Task{
             let videoUrl = self.createUrlArray(videos: videos)
@@ -246,7 +246,7 @@ class TruVideoReactVideoSdk: NSObject {
 //    }
     
   
-  @objc func changeEncoding(video: String,output: String,config :String,resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
+  @objc public func changeEncoding(video: String,output: String,config :String,resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
         // Create a EncodingBuilder instance with specified parameters
         Task{
             let videoUrl = self.convertStringToURL(video)
@@ -295,7 +295,7 @@ class TruVideoReactVideoSdk: NSObject {
         }
     }
 
-  @objc func editVideo(video : String,output : String,resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock){
+  @objc public func editVideo(video : String,output : String,resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock){
         DispatchQueue.main.async{
             guard let rootViewController = UIApplication.shared.keyWindow?.rootViewController else {
                 print("E_NO_ROOT_VIEW_CONTROLLER", "No root view controller found")
