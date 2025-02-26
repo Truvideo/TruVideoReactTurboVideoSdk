@@ -27,7 +27,6 @@ import React
             let resultPath = outputFolderURL.appendingPathComponent(path).path
             resolve(resultPath)
         } catch {
-            // Handle errors and reject the promise
             let error = NSError(domain: "com.yourdomain.yourapp", code: 500, userInfo: [NSLocalizedDescriptionKey: "Failed to get document directory path"])
             reject("no_path", "There is no result path", error)
         }
@@ -94,7 +93,7 @@ import React
                     let videoUrl = self.convertStringToURL(videoURL)
                     let inputPath : TruvideoSdkVideoFile = try .init(url: videoUrl)
                     let outputUrl = self.convertStringToURL(outputURL)
-                    let outputPath :TruvideoSdkVideoFileDescriptor =  .custom(rawPath: outputUrl.absoluteString)
+                    let outputPath :TruvideoSdkVideoFileDescriptor = .custom(rawPath: outputUrl.absoluteString)
                     // Generate a thumbnail for the provided video using TruvideoSdkVideo's thumbnailGenerator
                     let thumbnail = try await TruvideoSdkVideo.generateThumbnail(input: inputPath, output: outputPath, position: positionTime, width: Int(width), height: Int(height))
                     resolve(thumbnail.generatedThumbnailURL.absoluteString)
@@ -116,7 +115,7 @@ import React
         Task{
             do {
                 let inputPath : TruvideoSdkVideoFile = .init(url: videoUrl)
-                let outputPath :TruvideoSdkVideoFileDescriptor =  .files(fileName: outputUrl.absoluteString)
+                let outputPath :TruvideoSdkVideoFileDescriptor = .custom(rawPath: outputUrl.absoluteString)
                 // Attempt to clean noise from the input video file using TruvideoSdkVideo's engine
                 let result = try await TruvideoSdkVideo.engine.clearNoiseForFile(input: inputPath, output: outputPath)
                 resolve(result.fileURL.absoluteString)
@@ -133,21 +132,25 @@ import React
             do {
                 let videoUrl = createUrlArray(videos: videos)
                 let outputUrl = convertStringToURL(output)
-                
+                print(outputUrl)
+                print(videoUrl)
                 var inputUrl : [TruvideoSdkVideoFile] = []
                 for url in videoUrl {
                     inputUrl.append(.init(url: url))
                 }
-                let outputPath :TruvideoSdkVideoFileDescriptor =  .custom(rawPath: outputUrl.absoluteString)
+                let outputPath :TruvideoSdkVideoFileDescriptor = .custom(rawPath: outputUrl.absoluteString)
 
                 // Concatenate the videos using ConcatBuilder
                 let builder = TruvideoSdkVideo.ConcatBuilder(input: inputUrl, output: outputPath)
                 // Print the output path of the concatenated video
                 let result = builder.build()
                 do{
-                    let output = try? await result.process()
-                    resolve(output?.videoURL.absoluteString)
-                    await print("Successfully concatenated", output?.videoURL.absoluteString)
+                    let response = try await result.process()
+                    resolve(response.videoURL.absoluteString)
+                    print("Successfully concatenated", response.videoURL.absoluteString)
+                }catch let error {
+                    print(error.localizedDescription)
+                    reject("Concat_error", error.localizedDescription, error)
                 }
                 
             }
@@ -189,7 +192,7 @@ import React
                     for url in videoUrl {
                         inputUrl.append(.init(url: url))
                     }
-                    let outputPath :TruvideoSdkVideoFileDescriptor =  .custom(rawPath: outputUrl.absoluteString)
+                    let outputPath :TruvideoSdkVideoFileDescriptor = .custom(rawPath: outputUrl.absoluteString)
                     let builder = TruvideoSdkVideo.MergeBuilder(input: inputUrl, output: outputPath)
                     builder.width = width
                     builder.height = height
@@ -200,9 +203,7 @@ import React
                             resolve(output.videoURL.absoluteString)
                             await print("Successfully merge", output.videoURL.absoluteString ?? "")
                         }
-//                        } else{
-//                            reject("process_error", "Failed to process video merge", )
-//                        }
+
                     } catch {
                         reject("process_error", "Failed to process video merge: \(error.localizedDescription)", error)
                     }
@@ -237,18 +238,7 @@ import React
                 .fiftyFps
         }
     }
-//    func videoCodecString(_ videoCodecStr: String ) -> TruvideoSdkVideo.TruvideoSdkVideoVideoCodec{
-//        return switch videoCodecStr {
-//        case "h264":
-//                .h264
-//        case "h265":
-//                .h265
-//        default :
-//                .h264
-//        }
-//    }
-    
-  
+
   @objc public func changeEncoding(video: String,output: String,config :String,resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
         // Create a EncodingBuilder instance with specified parameters
         Task{
@@ -274,7 +264,7 @@ import React
                     
                     if let frameRateStr = configuration["framesRate"] as? String, let videoCodec = configuration["videoCodec"]{
                         let inputPath : TruvideoSdkVideoFile = .init(url: videoUrl)
-                        let outputPath :TruvideoSdkVideoFileDescriptor =  .files(fileName: outputUrl.absoluteString)
+                        let outputPath :TruvideoSdkVideoFileDescriptor = .custom(rawPath: outputUrl.absoluteString)
                         let builder = TruvideoSdkVideo.EncodingBuilder(input: inputPath, output: outputPath)
                         builder.height = height
                         builder.width = width
@@ -307,7 +297,7 @@ import React
             let videoUrl = self.convertStringToURL(video)
             let outputUrl = self.convertStringToURL(output)
             let inputPath : TruvideoSdkVideoFile = .init(url: videoUrl)
-            let outputPath :TruvideoSdkVideoFileDescriptor =  .custom(rawPath: outputUrl.absoluteString)
+            let outputPath :TruvideoSdkVideoFileDescriptor = .custom(rawPath: outputUrl.absoluteString)
             rootViewController.presentTruvideoSdkVideoEditorView(input: inputPath, output: outputPath, onComplete: {editionResult in
                 resolve(editionResult.editedVideoURL?.absoluteString)
                 print("Successfully edited", editionResult.editedVideoURL?.absoluteString)
