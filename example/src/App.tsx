@@ -1,7 +1,7 @@
 import { Text, View, StyleSheet } from 'react-native';
-import { multiply } from 'truvideo-react-turbo-video-sdk';
+import {  } from 'truvideo-react-turbo-video-sdk';
 
-const result = multiply(3, 7);
+const result = 3;
 
 export default function App() {
   return (
