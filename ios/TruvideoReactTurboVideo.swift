@@ -54,22 +54,57 @@ import React
     }
     
   @objc public func getVideoInfo(videos: String,resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
-        Task {
-            do {
-                let urlArray: [URL] = [convertStringToURL(videos)]
-                var inputUrl : [TruvideoSdkVideoFile] = []
-                for url in urlArray {
-                    inputUrl.append(.init(url: url))
-                }
-                // Call TruvideoSdkVideo to retrieve information about the videos
-                let result = try await TruvideoSdkVideo.getVideosInformation(input: inputUrl)
-                resolve(result.description)
-            } catch {
-                reject("json_error", "Error parsing JSON", error)
-                // Handle any errors that might occur during the process
-            }
-        }
-    }
+      Task {
+          do {
+              let urlArray: [URL] = [convertStringToURL(videos)]
+              var inputUrl : [TruvideoSdkVideoFile] = []
+              for url in urlArray {
+                  inputUrl.append(.init(url: url))
+              }
+              let result = try await TruvideoSdkVideo.getVideosInformation(input: inputUrl)
+              let dictionaryResult = result.map { videoInfo in
+                  return [
+                      "path": videoInfo.path,
+                      "size": videoInfo.size,
+                      "durationMillis": videoInfo.durationMillis,
+                      "format": videoInfo.format,
+                      "videos": videoInfo.videos.map { video in
+                          return [
+                              "index": video.index,
+                              "width": video.width,
+                              "height": video.height,
+                              "rotatedWidth": video.rotatedWidth,
+                              "rotatedHeight": video.rotatedHeight,
+                              "codec": video.codec,
+                              "codecTag": video.codecTag,
+                              "pixelFormat": video.pixelFormat,
+                              "bitRate": video.bitRate,
+                              "frameRate": video.frameRate,
+                              "rotation": video.rotation,
+                              "durationMillis": video.durationMillis
+                          ] as [String: Any]
+                      },
+                      "audios": videoInfo.audios.map { audio in
+                          return [
+                              "index": audio.index,
+                              "codec": audio.codec,
+                              "codecTag": audio.codecTag,
+                              "sampleFormat": audio.sampleFormat,
+                              "bitRate": audio.bitRate,
+                              "sampleRate": audio.sampleRate,
+                              "channels": audio.channels,
+                              "channelLayout": audio.channelLayout,
+                              "durationMillis": audio.durationMillis
+                          ] as [String: Any]
+                      }
+                  ] as [String: Any]
+              }
+              resolve(dictionaryResult)
+          } catch {
+              reject("SDK_Error", "get_Video_Info_Failed", error)
+          }
+      }
+  }
     
     func convertStringToURL(_ urlString: String) -> URL{
         guard let url = URL(string: "file://\(urlString)") else {
