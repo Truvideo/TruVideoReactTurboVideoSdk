@@ -26,6 +26,9 @@ export interface Spec extends TurboModule {
   cleanNoise(videoPath: string, resultPath: string): Promise<string>;
   editVideo(videoUri: string, resultPath: string): Promise<string>;
   getResultPath(path: string): Promise<string>;
+  getRequestById(id: string): Promise<string>;
+  processVideo(id: string): Promise<string>;
+  cancelVideo(id: string): Promise<string>;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>(

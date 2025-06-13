@@ -10,6 +10,7 @@ import com.truvideo.sdk.video.TruvideoSdkVideo
 import com.truvideo.sdk.video.model.TruvideoSdkVideoFile
 import com.truvideo.sdk.video.model.TruvideoSdkVideoFileDescriptor
 import com.truvideo.sdk.video.model.TruvideoSdkVideoFrameRate
+import com.truvideo.sdk.video.model.TruvideoSdkVideoRequest
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -46,7 +47,6 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
       )
       scope.launch {
         val request = builder.build()
-        request.process()
         promise!!.resolve("concat successfully")
       }
       // Handle result
@@ -100,7 +100,7 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
 //    }
     // Process the encode builder
     scope.launch{
-      result.build().process()
+      result.build()
       promise?.resolve("encode success")
     }
   }
@@ -171,6 +171,7 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
           else -> builder.framesRate = TruvideoSdkVideoFrameRate.defaultFrameRate
         }
       }
+
 //      if(configuration.has("videoCodec")){
 //        when(configuration.getString("videoCodec")){
 //          "h264" -> builder.videoCodec = TruvideoSdkVideoVideoCodec.h264
@@ -181,7 +182,6 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
 //      }
       scope.launch {
         val request = builder.build()
-        request.process()
         promise?.resolve("Merge Successful")
       }
       // Handle result
@@ -191,6 +191,49 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
       promise?.reject(exception.message.toString())
       exception.printStackTrace()
     }
+  }
+
+  override fun getRequestById(id : String,promise: Promise){
+    scope.launch {
+      val request  = TruvideoSdkVideo.getRequestById(id)
+      promise.resolve(returnRequest(request!!))
+    }
+  }
+
+  override fun processVideo(id : String,promise: Promise){
+    scope.launch {
+      val request = TruvideoSdkVideo.getRequestById(id)
+      request!!.process()
+      promise.resolve(returnRequest(request))
+    }
+  }
+
+  fun delete(id : String,promise: Promise){
+    scope.launch {
+      val request = TruvideoSdkVideo.getRequestById(id)
+      request!!.delete()
+      promise.resolve(returnRequest(request))
+    }
+  }
+
+  override fun cancelVideo(id : String,promise: Promise){
+    scope.launch {
+      val request = TruvideoSdkVideo.getRequestById(id)
+      request!!.cancel()
+      promise.resolve(returnRequest(request))
+    }
+  }
+
+  fun returnRequest(request : TruvideoSdkVideoRequest) : String{
+    return Gson().toJson(
+      mapOf<String, Any?>(
+        "id" to request.id,
+        "createdAt" to request.createdAt,
+        "status" to request.status.name,
+        "type" to request.type.name,
+        "updatedAt" to request.updatedAt
+      )
+    )
   }
 
   override fun generateThumbnail(
