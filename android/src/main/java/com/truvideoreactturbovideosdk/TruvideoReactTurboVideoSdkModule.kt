@@ -33,6 +33,7 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
     return a * b
   }
 
+
   override fun concatVideos(videoUris: ReadableArray?, resultPath: String?, promise: Promise?) {
     try {
       if(videoUris== null || resultPath == null){
@@ -47,7 +48,8 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
       )
       scope.launch {
         val request = builder.build()
-        promise!!.resolve("concat successfully")
+
+        promise!!.resolve(returnRequest(request))
       }
       // Handle result
       // the concated video its on 'resultVideoPath'
@@ -100,8 +102,8 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
 //    }
     // Process the encode builder
     scope.launch{
-      result.build()
-      promise?.resolve("encode success")
+      val request = result.build()
+      promise?.resolve(returnRequest(request))
     }
   }
 
@@ -182,7 +184,7 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
 //      }
       scope.launch {
         val request = builder.build()
-        promise?.resolve("Merge Successful")
+        promise?.resolve(returnRequest(request))
       }
       // Handle result
       // the merged video its on 'resultVideoPath'

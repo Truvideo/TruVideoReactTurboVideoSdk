@@ -295,7 +295,7 @@ import Combine
                         builder.framesRate = frameRate(frameRateStr)
                         let result = builder.build()
                         
-                      resolve(result.id)
+                      resolve(sendRequest(videoRequest: result))
                       print("Successfully concatenated", result.id)
                         
                     } else {
