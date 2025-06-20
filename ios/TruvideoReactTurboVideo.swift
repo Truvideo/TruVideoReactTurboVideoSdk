@@ -286,7 +286,7 @@ import Combine
                         return
                     }
                     
-                    if let frameRateStr = configuration["framesRate"] as? String, let videoCodec = configuration["videoCodec"]{
+                    if let frameRateStr = configuration["framesRate"] as? String{
                         let inputPath : TruvideoSdkVideoFile = .init(url: videoUrl)
                         let outputPath :TruvideoSdkVideoFileDescriptor = .custom(rawPath: outputUrl.absoluteString)
                         let builder = TruvideoSdkVideo.EncodingBuilder(input: inputPath, output: outputPath)
