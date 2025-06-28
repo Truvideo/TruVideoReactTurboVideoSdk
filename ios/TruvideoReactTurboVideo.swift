@@ -182,6 +182,8 @@ import Combine
                 print("Successfully concatenated", result.id)
                 
                 
+            }catch{
+              reject("Exception", error.localizedDescription, error)
             }
         }
         
