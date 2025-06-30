@@ -63,6 +63,24 @@ RCT_EXPORT_MODULE()
   [truvideo mergeVideosWithVideos:videoUris output:resultPath config:config resolve:resolve reject:reject];
 }
 
+- (void)cancelVideo:(nonnull NSString *)id resolve:(nonnull RCTPromiseResolveBlock)resolve reject:(nonnull RCTPromiseRejectBlock)reject {
+  TruVideoReactVideoSdkClass *truvideo = [[TruVideoReactVideoSdkClass alloc] init];
+  [truvideo cancelWithId:id resolve:resolve reject:reject];
+}
+
+
+- (void)getRequestById:(nonnull NSString *)id resolve:(nonnull RCTPromiseResolveBlock)resolve reject:(nonnull RCTPromiseRejectBlock)reject { 
+  TruVideoReactVideoSdkClass *truvideo = [[TruVideoReactVideoSdkClass alloc] init];
+  [truvideo getRequestByIdWithId:id resolve:resolve reject:reject];
+}
+
+
+- (void)processVideo:(nonnull NSString *)id resolve:(nonnull RCTPromiseResolveBlock)resolve reject:(nonnull RCTPromiseRejectBlock)reject {
+  TruVideoReactVideoSdkClass *truvideo = [[TruVideoReactVideoSdkClass alloc] init];
+  [truvideo processWithId:id resolve:resolve reject:reject];
+}
+
+
 
 - (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:
     (const facebook::react::ObjCTurboModule::InitParams &)params

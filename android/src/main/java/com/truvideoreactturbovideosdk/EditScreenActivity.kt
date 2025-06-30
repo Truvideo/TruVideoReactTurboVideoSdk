@@ -31,13 +31,23 @@ class EditScreenActivity : AppCompatActivity() {
 //        val editScreen = TruvideoSdkVideo.initEditScreen(this)
     editVideoLauncher = registerForActivityResult(TruvideoSdkVideoEditContract(), { result ->
       // edited video its on 'resultPath'
-      TruvideoReactTurboVideoSdkModule.mainPromise!!.resolve(result)
-      finish()
-      Log.d("TAG", "editVideo: result=$result")
+      if(result == null){
+        TruvideoReactTurboVideoSdkModule.mainPromise!!.resolve("")
+        finish()
+      }else{
+        TruvideoReactTurboVideoSdkModule.mainPromise!!.resolve(result)
+        finish()
+        Log.d("TAG", "editVideo: result=$result")
+      }
     })
 
-    CoroutineScope(Dispatchers.Main).launch {
-      editVideo(videoUri!!,resultPath!!)
+    try {
+      CoroutineScope(Dispatchers.Main).launch {
+        editVideo(videoUri!!,resultPath!!)
+      }
+    }catch (e : Exception){
+      TruvideoReactTurboVideoSdkModule.mainPromise!!.reject("Exception",e.message)
+      finish()
     }
   }
   suspend fun editVideo(videoUri: String, resultPath: String) {

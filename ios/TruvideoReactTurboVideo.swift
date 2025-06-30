@@ -10,6 +10,7 @@ import TruvideoSdkVideo
 import Foundation
 import UIKit
 import React
+import Combine
 
 
 @objc public class TruVideoReactVideoSdkClass: NSObject {
@@ -55,15 +56,13 @@ import React
     
   @objc public func getVideoInfo(videos: String,resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
       Task {
-          do {
-              let urlArray: [URL] = [convertStringToURL(videos)]
-              var inputUrl : [TruvideoSdkVideoFile] = []
-              for url in urlArray {
-                  inputUrl.append(.init(url: url))
-              }
-              let result = try await TruvideoSdkVideo.getVideosInformation(input: inputUrl)
-              let dictionaryResult = result.map { videoInfo in
-                  return [
+        do {
+          let urlArray: URL = convertStringToURL(videos)
+          var inputUrl : TruvideoSdkVideoFile = .init(url: urlArray)
+          let videoInfo = try await TruvideoSdkVideo.getVideoInformation(input: inputUrl)
+          
+          
+          let dictionaryResult : [String : Any] = [
                       "path": videoInfo.path,
                       "size": videoInfo.size,
                       "durationMillis": videoInfo.durationMillis,
@@ -85,20 +84,19 @@ import React
                           ] as [String: Any]
                       },
                       "audios": videoInfo.audios.map { audio in
-                          return [
-                              "index": audio.index,
-                              "codec": audio.codec,
-                              "codecTag": audio.codecTag,
-                              "sampleFormat": audio.sampleFormat,
-                              "bitRate": audio.bitRate,
-                              "sampleRate": audio.sampleRate,
-                              "channels": audio.channels,
-                              "channelLayout": audio.channelLayout,
-                              "durationMillis": audio.durationMillis
-                          ] as [String: Any]
+                        return [
+                          "index": audio.index,
+                          "codec": audio.codec,
+                          "codecTag": audio.codecTag,
+                          "sampleFormat": audio.sampleFormat,
+                          "bitRate": audio.bitRate,
+                          "sampleRate": audio.sampleRate,
+                          "channels": audio.channels,
+                          "channelLayout": audio.channelLayout,
+                          "durationMillis": audio.durationMillis
+                        ] as [String: Any]
                       }
-                  ] as [String: Any]
-              }
+                    ]
               resolve(dictionaryResult)
           } catch {
               reject("SDK_Error", "get_Video_Info_Failed", error)
@@ -178,16 +176,14 @@ import React
                 // Concatenate the videos using ConcatBuilder
                 let builder = TruvideoSdkVideo.ConcatBuilder(input: inputUrl, output: outputPath)
                 // Print the output path of the concatenated video
-                let result = builder.build()
-                do{
-                    let response = try await result.process()
-                    resolve(response.videoURL.absoluteString)
-                    print("Successfully concatenated", response.videoURL.absoluteString)
-                }catch let error {
-                    print(error.localizedDescription)
-                    reject("Concat_error", error.localizedDescription, error)
-                }
+                let result = try builder.build()
                 
+                resolve(sendRequest(videoRequest: result))
+                print("Successfully concatenated", result.id)
+                
+                
+            }catch{
+              reject("Exception", error.localizedDescription, error)
             }
         }
         
@@ -218,8 +214,7 @@ import React
                         return
                     }
                     // Parse frameRate and videoCodec as strings
-                    guard let frameRateStr = configuration["framesRate"] as? String,
-                          let videoCodec = configuration["videoCodec"] as? String else {
+                    guard let frameRateStr = configuration["framesRate"] as? String else {
                         print("framesRate or videoCodec are not valid strings or missing")
                         return
                     }
@@ -232,16 +227,12 @@ import React
                     builder.width = width
                     builder.height = height
                     builder.framesRate = frameRate(frameRateStr)
-                    let result = builder.build()
-                    do {
-                        if let output = try? await result.process() {
-                            resolve(output.videoURL.absoluteString)
-                            await print("Successfully merge", output.videoURL.absoluteString ?? "")
-                        }
-
-                    } catch {
-                        reject("process_error", "Failed to process video merge: \(error.localizedDescription)", error)
-                    }
+                  
+                
+                    let result = try builder.build()
+                    resolve(sendRequest(videoRequest: result))
+                    print("Successfully merge", result.id)
+                      
                 } else {
                     print("Invalid JSON format")
                     reject("json_error", "Invalid JSON format", nil)
@@ -297,7 +288,7 @@ import React
                         return
                     }
                     
-                    if let frameRateStr = configuration["framesRate"] as? String, let videoCodec = configuration["videoCodec"]{
+                    if let frameRateStr = configuration["framesRate"] as? String{
                         let inputPath : TruvideoSdkVideoFile = .init(url: videoUrl)
                         let outputPath :TruvideoSdkVideoFileDescriptor = .custom(rawPath: outputUrl.absoluteString)
                         let builder = TruvideoSdkVideo.EncodingBuilder(input: inputPath, output: outputPath)
@@ -305,11 +296,10 @@ import React
                         builder.width = width
                         builder.framesRate = frameRate(frameRateStr)
                         let result = builder.build()
-                        do{
-                            let output = try? await result.process()
-                            resolve(output?.videoURL.absoluteString)
-                            await print("Successfully concatenated", output?.videoURL.absoluteString)
-                        }
+                        
+                      resolve(sendRequest(videoRequest: result))
+                      print("Successfully concatenated", result.id)
+                        
                     } else {
                         print("Invalid JSON format")
                         reject("json_error", "Invalid JSON format", nil)
@@ -323,6 +313,105 @@ import React
         }
     }
 
+  func sendRequest(videoRequest : TruvideoSdkVideo.TruvideoSdkVideoRequest) -> String{
+    let dateFormatter = ISO8601DateFormatter()
+    var type = videoRequest.type
+    var typeString = ""
+    if(type == .merge){
+      typeString = "merge"
+    }else if(type == .concat){
+      typeString = "concat"
+    }else {
+      typeString = "encode"
+    }
+    let mainResponse: [String: String] = [
+      "id": videoRequest.id.uuidString,
+      "createdAt" : dateFormatter.string(from: videoRequest.createdAt),
+      "status" : "\(videoRequest.status.rawValue)",
+      "type" : typeString,
+      "updatedAt" : dateFormatter.string(from: videoRequest.updatedAt)
+    ]
+    print("Received request:", videoRequest)
+    do{
+      let jsonData = try JSONSerialization.data(withJSONObject: mainResponse, options: [])
+      if let jsonString = String(data: jsonData, encoding: .utf8) {
+        print("json",jsonString)
+        return jsonString
+      }else{
+        return "{}"
+      }
+    }catch{
+      return "{}"
+    }
+  }
+  
+  @objc public func getRequestById(id : String,resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock){
+    var cancellables = Set<AnyCancellable>()
+    do {
+      let publisher = try TruvideoSdkVideo.streamRequest(withId: UUID(uuidString :id) ?? UUID())
+      let dateFormatter = ISO8601DateFormatter()
+        publisher
+            .sink { videoRequest in
+                // Handle each emitted TruvideoSdkVideoRequest
+              var jsonString = self.sendRequest(videoRequest : videoRequest)
+              resolve(self.sendRequest(videoRequest: videoRequest))
+              cancellables.removeAll()
+            }
+            .store(in: &cancellables)
+
+    } catch {
+        // Handle thrown error from streamRequest
+        print("Failed to create publisher:", error)
+    }
+  }
+  
+  @objc public func cancel(id : String,resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock){
+    var cancellables = Set<AnyCancellable>()
+    do {
+      let publisher = try TruvideoSdkVideo.streamRequest(withId: UUID(uuidString :id) ?? UUID())
+        publisher
+            .sink { videoRequest in
+                // Handle each emitted TruvideoSdkVideoRequest
+              do {
+                try videoRequest.cancel()
+                resolve(self.sendRequest(videoRequest: videoRequest))
+                cancellables.removeAll()
+              }catch{
+                reject("","",nil)
+              }
+            }
+            .store(in: &cancellables)
+    } catch {
+        // Handle thrown error from streamRequest
+        print("Failed to create publisher:", error)
+    }
+  }
+  
+  @objc public func process(id : String,resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock){
+    var cancellables = Set<AnyCancellable>()
+    do {
+      let publisher = try TruvideoSdkVideo.streamRequest(withId: UUID(uuidString :id) ?? UUID())
+        publisher
+            .sink { videoRequest in
+                // Handle each emitted TruvideoSdkVideoRequest
+              Task{
+                do {
+                  var data = try await videoRequest.process()
+                  resolve(self.sendRequest(videoRequest: videoRequest))
+                  cancellables.removeAll()
+                }catch{
+                  
+                }
+              }
+            }
+            .store(in: &cancellables)
+    } catch {
+        // Handle thrown error from streamRequest
+        print("Failed to create publisher:", error)
+    }
+  }
+  
+  
   @objc public func editVideo(video : String,output : String,resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock){
         DispatchQueue.main.async{
             guard let rootViewController = UIApplication.shared.keyWindow?.rootViewController else {

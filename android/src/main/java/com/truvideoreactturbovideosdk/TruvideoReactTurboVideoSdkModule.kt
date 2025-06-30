@@ -10,6 +10,7 @@ import com.truvideo.sdk.video.TruvideoSdkVideo
 import com.truvideo.sdk.video.model.TruvideoSdkVideoFile
 import com.truvideo.sdk.video.model.TruvideoSdkVideoFileDescriptor
 import com.truvideo.sdk.video.model.TruvideoSdkVideoFrameRate
+import com.truvideo.sdk.video.model.TruvideoSdkVideoRequest
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -32,6 +33,7 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
     return a * b
   }
 
+
   override fun concatVideos(videoUris: ReadableArray?, resultPath: String?, promise: Promise?) {
     try {
       if(videoUris== null || resultPath == null){
@@ -46,14 +48,14 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
       )
       scope.launch {
         val request = builder.build()
-        request.process()
-        promise!!.resolve("concat successfully")
+
+        promise!!.resolve(returnRequest(request))
       }
       // Handle result
       // the concated video its on 'resultVideoPath'
     } catch (exception: Exception) {
       // Handle error
-      promise?.reject(exception.message!!)
+      promise?.reject("Exception",exception.message!!)
       exception.printStackTrace()
     }
   }
@@ -90,18 +92,13 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
         else -> result.framesRate = TruvideoSdkVideoFrameRate.defaultFrameRate
       }
     }
-//    if(configuration.has("videoCodec")){
-//      when(configuration.getString("videoCodec")){
-//        "h264" -> result.videoCodec = TruvideoSdkVideoVideoCodec.h264
-//        "h265" -> result.videoCodec = TruvideoSdkVideoVideoCodec.h265
-//        "libx264" -> result.videoCodec = TruvideoSdkVideoVideoCodec.libx264
-//        else -> result.videoCodec = TruvideoSdkVideoVideoCodec.defaultCodec
-//      }
-//    }
-    // Process the encode builder
-    scope.launch{
-      result.build().process()
-      promise?.resolve("encode success")
+    try{
+      scope.launch{
+        val request = result.build()
+        promise?.resolve(returnRequest(request))
+      }
+    }catch (e: Exception){
+      promise?.reject("Exception",e.message.toString())
     }
   }
 
@@ -117,7 +114,7 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
       }
     } catch (exception: Exception) {
       exception.printStackTrace()
-      promise?.reject(exception.message.toString())
+      promise?.reject("Exception",exception.message.toString())
       // Handle error
     }
   }
@@ -135,7 +132,7 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
       }
     } catch (exception: Exception) {
       // Handle error
-      promise?.reject(exception.message.toString())
+      promise?.reject("Exception",exception.message.toString())
       exception.printStackTrace()
     }
 
@@ -171,6 +168,7 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
           else -> builder.framesRate = TruvideoSdkVideoFrameRate.defaultFrameRate
         }
       }
+
 //      if(configuration.has("videoCodec")){
 //        when(configuration.getString("videoCodec")){
 //          "h264" -> builder.videoCodec = TruvideoSdkVideoVideoCodec.h264
@@ -181,8 +179,7 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
 //      }
       scope.launch {
         val request = builder.build()
-        request.process()
-        promise?.resolve("Merge Successful")
+        promise?.resolve(returnRequest(request))
       }
       // Handle result
       // the merged video its on 'resultVideoPath'
@@ -191,6 +188,65 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
       promise?.reject(exception.message.toString())
       exception.printStackTrace()
     }
+  }
+
+  override fun getRequestById(id : String,promise: Promise){
+    try{
+      scope.launch {
+        val request  = TruvideoSdkVideo.getRequestById(id)
+        promise.resolve(returnRequest(request!!))
+      }
+    }catch (e: Exception){
+      promise.reject("Exception",e.message)
+    }
+  }
+
+  override fun processVideo(id : String,promise: Promise){
+    try{
+      scope.launch {
+        val request = TruvideoSdkVideo.getRequestById(id)
+        request!!.process()
+        promise.resolve(returnRequest(request))
+      }
+    }catch (e: Exception){
+      promise.reject("Exception",e.message)
+    }
+  }
+
+  fun delete(id : String,promise: Promise){
+    try{
+      scope.launch {
+        val request = TruvideoSdkVideo.getRequestById(id)
+        request!!.delete()
+        promise.resolve(returnRequest(request))
+      }
+    }catch (e: Exception){
+      promise.reject("Exception",e.message)
+    }
+  }
+
+  override fun cancelVideo(id : String,promise: Promise){
+    try{
+      scope.launch {
+        val request = TruvideoSdkVideo.getRequestById(id)
+        request!!.cancel()
+        promise.resolve(returnRequest(request))
+      }
+    }catch (e: Exception){
+      promise.reject("Exception",e.message)
+    }
+  }
+
+  fun returnRequest(request : TruvideoSdkVideoRequest) : String{
+    return Gson().toJson(
+      mapOf<String, Any?>(
+        "id" to request.id,
+        "createdAt" to request.createdAt,
+        "status" to request.status.name,
+        "type" to request.type.name,
+        "updatedAt" to request.updatedAt
+      )
+    )
   }
 
   override fun generateThumbnail(
@@ -216,13 +272,9 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
         )
         promise?.resolve(result)
       }
-//      setThumbnail(context,videoPath,resultPath)
-
-      // Handle result
-      // the thumbnail image is stored in resultImagePath
     } catch (exception: Exception) {
       // Handle error
-      promise?.reject(exception.message.toString())
+      promise?.reject("Exception",exception.message.toString())
       exception.printStackTrace()
     }
   }
@@ -241,7 +293,7 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
       // the cleaned video will be stored in resultVideoPath
     }catch (exception:Exception){
       // Handle error
-      promise?.reject(exception.message.toString())
+      promise?.reject("Exception",exception.message.toString())
       exception.printStackTrace()
     }
   }
