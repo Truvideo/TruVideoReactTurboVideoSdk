@@ -1,0 +1,270 @@
+// swift-interface-format-version: 1.0
+// swift-compiler-version: Apple Swift version 5.10 (swiftlang-5.10.0.13 clang-1500.3.9.4)
+// swift-module-flags: -target x86_64-apple-ios15.0-simulator -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -Onone -enable-bare-slash-regex -module-name TruvideoSdkVideo
+import AVFoundation
+import AVKit
+import AudioToolbox
+import CoreData
+import Foundation
+import Swift
+import SwiftUI
+@_exported import TruvideoSdkVideo
+import UIKit
+import _AVKit_SwiftUI
+import _Concurrency
+import _StringProcessing
+import _SwiftConcurrencyShims
+public let TruvideoSdkVideo: any TruvideoSdkVideo.TruvideoSdkVideoInterface
+public protocol TruvideoSdkVideoInterface {
+  var engine: any TruvideoSdkVideo.TruvideoSdkVideoNoiseCancellationEngine { get }
+  var thumbnailGenerator: any TruvideoSdkVideo.TruvideoSdkVideoThumbnailGenerator { get }
+  #if compiler(>=5.3) && $AsyncAwait
+  func canProcessConcatWith(videos: [Foundation.URL]) async throws -> Swift.Bool
+  #endif
+  func MergeBuilder(videos: [Foundation.URL], width: CoreFoundation.CGFloat?, height: CoreFoundation.CGFloat?, videoCodec: TruvideoSdkVideo.TruvideoSdkVideoVideoCodec, audioCodec: TruvideoSdkVideo.TruvideoSdkVideoAudioCodec, framesRate: TruvideoSdkVideo.TruvideoSdkVideoFrameRate, outputURL: Foundation.URL) -> TruvideoSdkVideo.MergeBuilder
+  func ConcatBuilder(videos: [Foundation.URL], outputURL: Foundation.URL) -> TruvideoSdkVideo.ConcatBuilder
+  func EncodingBuilder(at url: Foundation.URL, width: CoreFoundation.CGFloat?, height: CoreFoundation.CGFloat?, videoCodec: TruvideoSdkVideo.TruvideoSdkVideoVideoCodec, audioCodec: TruvideoSdkVideo.TruvideoSdkVideoAudioCodec, framesRate: TruvideoSdkVideo.TruvideoSdkVideoFrameRate, outputURL: Foundation.URL) -> TruvideoSdkVideo.EncodingBuilder
+  func getRequests(withStatus status: TruvideoSdkVideo.TruvideoSdkVideoRequest.Status) throws -> [TruvideoSdkVideo.TruvideoSdkVideoRequest]
+  #if compiler(>=5.3) && $AsyncAwait
+  func getVideosInformation(videos: [Foundation.URL]) async throws -> [TruvideoSdkVideo.TruvideoSdkVideoInfo]
+  #endif
+}
+public struct TruvideoSdkVideoEditorResult {
+  public let editedVideoURL: Foundation.URL?
+}
+public protocol TruvideoSdkVideoNoiseCancellationEngine {
+  #if compiler(>=5.3) && $AsyncAwait
+  func clearNoiseForFile(at: Foundation.URL, outputURL: Foundation.URL) async throws -> TruvideoSdkVideo.TruvideoSdkVideoNoiseCancellationResult
+  #endif
+}
+public struct TruvideoSdkVideoNoiseCancellationResult {
+  public let fileURL: Foundation.URL
+}
+public enum TruvideoSdkVideoVideoCodec : Swift.String {
+  case h264
+  case h265
+  public init?(rawValue: Swift.String)
+  public typealias RawValue = Swift.String
+  public var rawValue: Swift.String {
+    get
+  }
+}
+public enum TruvideoSdkVideoFrameRate : Swift.String {
+  case twentyFourFps
+  case twentyFiveFps
+  case thirtyFps
+  case fiftyFps
+  case sixtyFps
+  public init?(rawValue: Swift.String)
+  public typealias RawValue = Swift.String
+  public var rawValue: Swift.String {
+    get
+  }
+}
+public enum TruvideoSdkVideoAudioCodec : Swift.String {
+  case aac
+  case ac3
+  case mp3
+  public init?(rawValue: Swift.String)
+  public typealias RawValue = Swift.String
+  public var rawValue: Swift.String {
+    get
+  }
+}
+public protocol TruvideoSdkVideoThumbnailGenerator {
+  #if compiler(>=5.3) && $AsyncAwait
+  func generateThumbnail(for video: TruvideoSdkVideo.TruvideoSdkVideoThumbnailInputVideo) async throws -> TruvideoSdkVideo.TruvideoSdkVideoThumbnailResult
+  #endif
+}
+public struct TruvideoSdkVideoThumbnailInputVideo {
+  public let videoURL: Foundation.URL
+  public let outputURL: Foundation.URL
+  public let position: Foundation.TimeInterval
+  public let width: Swift.Int?
+  public let height: Swift.Int?
+  public init(videoURL: Foundation.URL, outputURL: Foundation.URL, position: Foundation.TimeInterval, width: Swift.Int? = nil, height: Swift.Int? = nil)
+}
+public struct TruvideoSdkVideoThumbnailResult {
+  public let generatedThumbnailURL: Foundation.URL
+}
+@_hasMissingDesignatedInitializers final public class ConcatBuilder {
+  final public func build() -> TruvideoSdkVideo.TruvideoSdkVideoRequest
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers final public class EncodingBuilder {
+  final public func build() -> TruvideoSdkVideo.TruvideoSdkVideoRequest
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers final public class MergeBuilder {
+  final public func build() -> TruvideoSdkVideo.TruvideoSdkVideoRequest
+  @objc deinit
+}
+public enum TruvideoSdkVideoError : Swift.Error, Swift.Equatable {
+  case configurationError
+  case unableToProcessInput
+  case unableToProcessOutput
+  case processingInProgress
+  case userNotAuthenticated
+  case invalidFile
+  case unableToProcessFile
+  case missingVideoTrackToMerge
+  case unknownVideoCodec
+  case unknownAudioCodec
+  case mergeFailed
+  case concatFailed
+  case encodingFailed
+  case invalidInputFiles(reason: TruvideoSdkVideo.TruvideoSdkVideoError.InvalidInputFilesReason)
+  public enum InvalidInputFilesReason {
+    case differentResolutions
+    case differentAudioLayers
+    case differentCodecs
+    case inputContainsNonExistingFiles
+    case noMetadataGenerated
+    case notEnoughVideos
+    case differentFrameRates
+    public static func == (a: TruvideoSdkVideo.TruvideoSdkVideoError.InvalidInputFilesReason, b: TruvideoSdkVideo.TruvideoSdkVideoError.InvalidInputFilesReason) -> Swift.Bool
+    public func hash(into hasher: inout Swift.Hasher)
+    public var hashValue: Swift.Int {
+      get
+    }
+  }
+  case notFoundVideo
+  case unableToDeleteExistingThumbnail
+  case invalidThumbnailWidth
+  case invalidThumbnailHeight
+  case invalidResolution
+  case invalidPositionInVideo
+  case thumbnailGenerationFailed
+  case invalidTrimRange
+  case trimFailed
+  case operationStillsInProgress
+  case operationAlreadyCompleted
+  case operationNotFound
+  case operationMustBeProcessingToBeCancelled
+  public static func == (a: TruvideoSdkVideo.TruvideoSdkVideoError, b: TruvideoSdkVideo.TruvideoSdkVideoError) -> Swift.Bool
+}
+public struct TruvideoSdkVideoInfo {
+  public let orientation: TruvideoSdkVideo.TruvideoSdkVideoInfo.Orientation
+  public let hasAudio: Swift.Bool
+  public let size: CoreFoundation.CGSize
+  public let url: Foundation.URL
+  public let videoCodec: Swift.String
+  public let audioCodec: Swift.String?
+  public let audioSampleRates: Swift.Double?
+  public let durationMillis: Swift.Int
+  public let width: Swift.Int
+  public let height: Swift.Int
+  public let path: Swift.String
+  public let videoPixelFormat: Swift.String
+  public let hasVideo: Swift.Bool
+  public let byteSize: Swift.Int
+  public let frameRate: TruvideoSdkVideo.TruvideoSdkVideoFrameRate
+  public enum Orientation {
+    case portrait
+    case landscape
+    public static func == (a: TruvideoSdkVideo.TruvideoSdkVideoInfo.Orientation, b: TruvideoSdkVideo.TruvideoSdkVideoInfo.Orientation) -> Swift.Bool
+    public func hash(into hasher: inout Swift.Hasher)
+    public var hashValue: Swift.Int {
+      get
+    }
+  }
+}
+@_hasMissingDesignatedInitializers final public class TruvideoSdkVideoRequest {
+  public enum `Type` {
+    case merge
+    case encode
+    case concat
+    public static func == (a: TruvideoSdkVideo.TruvideoSdkVideoRequest.`Type`, b: TruvideoSdkVideo.TruvideoSdkVideoRequest.`Type`) -> Swift.Bool
+    public func hash(into hasher: inout Swift.Hasher)
+    public var hashValue: Swift.Int {
+      get
+    }
+  }
+  public enum Status {
+    case idle
+    case error
+    case complete
+    case cancelled
+    case processing
+    public static func == (a: TruvideoSdkVideo.TruvideoSdkVideoRequest.Status, b: TruvideoSdkVideo.TruvideoSdkVideoRequest.Status) -> Swift.Bool
+    public func hash(into hasher: inout Swift.Hasher)
+    public var hashValue: Swift.Int {
+      get
+    }
+  }
+  public struct VideoMergeData : Swift.Equatable {
+    public let videos: [Foundation.URL]
+    public let width: CoreFoundation.CGFloat?
+    public let height: CoreFoundation.CGFloat?
+    public let videoCodec: TruvideoSdkVideo.TruvideoSdkVideoVideoCodec
+    public let audioCodec: TruvideoSdkVideo.TruvideoSdkVideoAudioCodec
+    public let framesRate: TruvideoSdkVideo.TruvideoSdkVideoFrameRate
+    public static func == (a: TruvideoSdkVideo.TruvideoSdkVideoRequest.VideoMergeData, b: TruvideoSdkVideo.TruvideoSdkVideoRequest.VideoMergeData) -> Swift.Bool
+  }
+  public struct VideoConcatData : Swift.Equatable {
+    public let videos: [Foundation.URL]
+    public static func == (a: TruvideoSdkVideo.TruvideoSdkVideoRequest.VideoConcatData, b: TruvideoSdkVideo.TruvideoSdkVideoRequest.VideoConcatData) -> Swift.Bool
+  }
+  public struct VideoEncodingData : Swift.Equatable {
+    public let inputFileURL: Foundation.URL
+    public let width: CoreFoundation.CGFloat?
+    public let height: CoreFoundation.CGFloat?
+    public let videoCodec: TruvideoSdkVideo.TruvideoSdkVideoVideoCodec
+    public let audioCodec: TruvideoSdkVideo.TruvideoSdkVideoAudioCodec
+    public let framesRate: TruvideoSdkVideo.TruvideoSdkVideoFrameRate
+    public static func == (a: TruvideoSdkVideo.TruvideoSdkVideoRequest.VideoEncodingData, b: TruvideoSdkVideo.TruvideoSdkVideoRequest.VideoEncodingData) -> Swift.Bool
+  }
+  public struct Result {
+    public let videoURL: Foundation.URL
+  }
+  final public let id: Foundation.UUID
+  final public let type: TruvideoSdkVideo.TruvideoSdkVideoRequest.`Type`
+  final public let status: TruvideoSdkVideo.TruvideoSdkVideoRequest.Status
+  final public let outputPath: Foundation.URL
+  final public let createdAt: Foundation.Date
+  final public let updatedAt: Foundation.Date
+  final public let errorMessage: Swift.String?
+  final public var encodingData: TruvideoSdkVideo.TruvideoSdkVideoRequest.VideoEncodingData? {
+    get
+  }
+  final public var mergeData: TruvideoSdkVideo.TruvideoSdkVideoRequest.VideoMergeData? {
+    get
+  }
+  final public var concatData: TruvideoSdkVideo.TruvideoSdkVideoRequest.VideoConcatData? {
+    get
+  }
+  #if compiler(>=5.3) && $AsyncAwait
+  final public func process() async throws -> TruvideoSdkVideo.TruvideoSdkVideoRequest.Result
+  #endif
+  final public func cancel() throws
+  @objc deinit
+}
+public struct TruvideoSdkVideoEditorPreset {
+  public let videoURL: Foundation.URL
+  public let outputURL: Foundation.URL
+  public init(videoURL: Foundation.URL, outputURL: Foundation.URL)
+}
+extension UIKit.UIViewController {
+  @_Concurrency.MainActor(unsafe) public func presentTruvideoSdkVideoEditorView(preset: TruvideoSdkVideo.TruvideoSdkVideoEditorPreset, onComplete: @escaping (TruvideoSdkVideo.TruvideoSdkVideoEditorResult) -> Swift.Void)
+}
+extension SwiftUI.View {
+  public func presentTruvideoSdkVideoEditorView(isPresented: SwiftUI.Binding<Swift.Bool>, videoURL: Foundation.URL, completion: @escaping (TruvideoSdkVideo.TruvideoSdkVideoEditorResult) -> Swift.Void) -> some SwiftUI.View
+  
+}
+extension TruvideoSdkVideo.TruvideoSdkVideoVideoCodec : Swift.Equatable {}
+extension TruvideoSdkVideo.TruvideoSdkVideoVideoCodec : Swift.Hashable {}
+extension TruvideoSdkVideo.TruvideoSdkVideoVideoCodec : Swift.RawRepresentable {}
+extension TruvideoSdkVideo.TruvideoSdkVideoFrameRate : Swift.Equatable {}
+extension TruvideoSdkVideo.TruvideoSdkVideoFrameRate : Swift.Hashable {}
+extension TruvideoSdkVideo.TruvideoSdkVideoFrameRate : Swift.RawRepresentable {}
+extension TruvideoSdkVideo.TruvideoSdkVideoAudioCodec : Swift.Equatable {}
+extension TruvideoSdkVideo.TruvideoSdkVideoAudioCodec : Swift.Hashable {}
+extension TruvideoSdkVideo.TruvideoSdkVideoAudioCodec : Swift.RawRepresentable {}
+extension TruvideoSdkVideo.TruvideoSdkVideoError.InvalidInputFilesReason : Swift.Equatable {}
+extension TruvideoSdkVideo.TruvideoSdkVideoError.InvalidInputFilesReason : Swift.Hashable {}
+extension TruvideoSdkVideo.TruvideoSdkVideoInfo.Orientation : Swift.Equatable {}
+extension TruvideoSdkVideo.TruvideoSdkVideoInfo.Orientation : Swift.Hashable {}
+extension TruvideoSdkVideo.TruvideoSdkVideoRequest.`Type` : Swift.Equatable {}
+extension TruvideoSdkVideo.TruvideoSdkVideoRequest.`Type` : Swift.Hashable {}
+extension TruvideoSdkVideo.TruvideoSdkVideoRequest.Status : Swift.Equatable {}
+extension TruvideoSdkVideo.TruvideoSdkVideoRequest.Status : Swift.Hashable {}
