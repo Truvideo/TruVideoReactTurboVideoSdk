@@ -151,7 +151,6 @@
 			);
 			mainGroup = 83CBB9F61A601CBA00E9B192;
 			packageReferences = (
-				180069022E100BF900E88C0E /* XCRemoteSwiftPackageReference "truvideo-sdk-ios-video" */,
 			);
 			productRefGroup = 83CBBA001A601CBA00E9B192 /* Products */;
 			projectDirPath = "";
