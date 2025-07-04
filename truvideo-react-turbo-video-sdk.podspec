@@ -17,7 +17,7 @@ Pod::Spec.new do |s|
   s.source_files = "ios/**/*.{h,m,mm,cpp,swift}"
   s.private_header_files = "ios/**/*.h"
   s.vendored_frameworks = ['ios/xcframeworks/TruvideoSdkImage.xcframework',
-  'ios/xcframeworks/utils/ffmpegkit.xcframework',
+  #'ios/xcframeworks/utils/ffmpegkit.xcframework',
   'ios/xcframeworks/utils/libavcodec.xcframework',
   'ios/xcframeworks/utils/libavdevice.xcframework',
   'ios/xcframeworks/utils/libavfilter.xcframework',
