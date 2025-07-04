@@ -17,14 +17,14 @@ Pod::Spec.new do |s|
   s.source_files = "ios/**/*.{h,m,mm,cpp,swift}"
   s.private_header_files = "ios/**/*.h"
   s.vendored_frameworks = ['ios/xcframeworks/TruvideoSdkVideo.xcframework',
-  # 'ios/xcframeworks/utils/ffmpegkit.xcframework',
-  # 'ios/xcframeworks/utils/libavcodec.xcframework',
-#   'ios/xcframeworks/utils/libavdevice.xcframework',
-#   'ios/xcframeworks/utils/libavfilter.xcframework',
-#   'ios/xcframeworks/utils/libavformat.xcframework',
-#   'ios/xcframeworks/utils/libavutil.xcframework',
-#   'ios/xcframeworks/utils/libswresample.xcframework',
-#   'ios/xcframeworks/utils/libswscale.xcframework'
+#   'ios/xcframeworks/utils/ffmpegkit.xcframework',
+#   'ios/xcframeworks/utils/libavcodec.xcframework',
+  'ios/xcframeworks/utils/libavdevice.xcframework',
+  'ios/xcframeworks/utils/libavfilter.xcframework',
+  'ios/xcframeworks/utils/libavformat.xcframework',
+  'ios/xcframeworks/utils/libavutil.xcframework',
+  'ios/xcframeworks/utils/libswresample.xcframework',
+  'ios/xcframeworks/utils/libswscale.xcframework'
   ]
   s.static_framework = true
   # Use install_modules_dependencies helper to install the dependencies if React Native version >=0.71.0.
