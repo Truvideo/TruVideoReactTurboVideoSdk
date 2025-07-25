@@ -5,7 +5,6 @@ import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.module.annotations.ReactModule
-import com.google.gson.Gson
 import com.truvideo.sdk.video.TruvideoSdkVideo
 import com.truvideo.sdk.video.model.TruvideoSdkVideoFile
 import com.truvideo.sdk.video.model.TruvideoSdkVideoFileDescriptor
@@ -14,6 +13,7 @@ import com.truvideo.sdk.video.model.TruvideoSdkVideoRequest
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
 import org.json.JSONObject
 import java.io.File
 
@@ -21,7 +21,6 @@ import java.io.File
 class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
   NativeTruvideoReactTurboVideoSdkSpec(reactContext) {
   val scope = CoroutineScope(Dispatchers.Main)
-  val gson = Gson()
 
   override fun getName(): String {
     return NAME
@@ -48,7 +47,6 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
       )
       scope.launch {
         val request = builder.build()
-
         promise!!.resolve(returnRequest(request))
       }
       // Handle result
@@ -110,7 +108,7 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
     try {
       scope.launch {
         val info = TruvideoSdkVideo.getInfo(videoFile(videoPath))
-        promise?.resolve(gson.toJson(info))
+        promise?.resolve(Json.encodeToString(info))
       }
     } catch (exception: Exception) {
       exception.printStackTrace()
@@ -238,7 +236,7 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
   }
 
   fun returnRequest(request : TruvideoSdkVideoRequest) : String{
-    return Gson().toJson(
+    return Json.encodeToString(
       mapOf<String, Any?>(
         "id" to request.id,
         "createdAt" to request.createdAt,
