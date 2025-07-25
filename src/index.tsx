@@ -220,7 +220,7 @@ export class EncodeBuilder {
     return this;
   }
 
-  setWigth(width: number): EncodeBuilder {
+  setWidth(width: number): EncodeBuilder {
     this.width = '' + width;
     return this;
   }
