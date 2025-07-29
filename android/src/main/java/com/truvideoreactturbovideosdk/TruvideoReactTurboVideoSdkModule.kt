@@ -9,11 +9,16 @@ import com.truvideo.sdk.video.TruvideoSdkVideo
 import com.truvideo.sdk.video.model.TruvideoSdkVideoFile
 import com.truvideo.sdk.video.model.TruvideoSdkVideoFileDescriptor
 import com.truvideo.sdk.video.model.TruvideoSdkVideoFrameRate
+import com.truvideo.sdk.video.model.TruvideoSdkVideoInformation
 import com.truvideo.sdk.video.model.TruvideoSdkVideoRequest
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.serialization.builtins.MapSerializer
+import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.encodeToJsonElement
 import org.json.JSONObject
 import java.io.File
 
@@ -73,7 +78,7 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
     val result = TruvideoSdkVideo.EncodeBuilder(
       videoFile(videoUri),
       videoFileDescriptor(resultPath))
-    val configuration = JSONObject(config)
+    val configuration = JSONObject(config!!)
     if(configuration.has("height")){
       result.height = configuration.getInt("height")
     }
@@ -108,7 +113,7 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
     try {
       scope.launch {
         val info = TruvideoSdkVideo.getInfo(videoFile(videoPath))
-        promise?.resolve(Json.encodeToString(info))
+        promise?.resolve(Json.encodeToString(TruvideoSdkVideoInformation.serializer(),info))
       }
     } catch (exception: Exception) {
       exception.printStackTrace()
@@ -149,7 +154,7 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
     try{
       val videoUriList = videoUris.toArrayList().map { it.toString() }
       val builder = TruvideoSdkVideo.MergeBuilder(listVideoFile(videoUriList), videoFileDescriptor(resultPath))
-      val configuration = JSONObject(config)
+      val configuration = JSONObject(config!!)
       if(configuration.has("height")){
         builder.height = configuration.getInt("height")
       }
@@ -183,7 +188,7 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
       // the merged video its on 'resultVideoPath'
     }catch (exception:Exception){
       //Handle error
-      promise?.reject(exception.message.toString())
+      promise?.reject(exception.message.toString(),exception)
       exception.printStackTrace()
     }
   }
@@ -236,14 +241,17 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
   }
 
   fun returnRequest(request : TruvideoSdkVideoRequest) : String{
-    return Json.encodeToString(
-      mapOf<String, Any?>(
+    val mainResponse = mapOf<String, Any?>(
         "id" to request.id,
         "createdAt" to request.createdAt,
         "status" to request.status.name,
         "type" to request.type.name,
         "updatedAt" to request.updatedAt
       )
+
+    return Json.encodeToString(
+      MapSerializer(String.serializer(), JsonElement.serializer()),
+      mainResponse.mapValues { Json.encodeToJsonElement(it.value) }
     )
   }
 
@@ -284,7 +292,7 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
     }
     try{
       scope.launch {
-        val result = TruvideoSdkVideo.clearNoise(videoFile(videoPath), videoFileDescriptor(resultPath))
+        TruvideoSdkVideo.clearNoise(videoFile(videoPath), videoFileDescriptor(resultPath))
         promise?.resolve("Clean Noise Successful")
       }
       // Handle result
@@ -309,7 +317,6 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
   companion object {
     const val NAME = "TruvideoReactTurboVideoSdk"
     var mainPromise : Promise? = null
-    var promise2 : Promise?  = null
   }
 
   fun videoFile(inputPath : String): TruvideoSdkVideoFile {
