@@ -9,11 +9,16 @@ import com.truvideo.sdk.video.TruvideoSdkVideo
 import com.truvideo.sdk.video.model.TruvideoSdkVideoFile
 import com.truvideo.sdk.video.model.TruvideoSdkVideoFileDescriptor
 import com.truvideo.sdk.video.model.TruvideoSdkVideoFrameRate
+import com.truvideo.sdk.video.model.TruvideoSdkVideoInformation
 import com.truvideo.sdk.video.model.TruvideoSdkVideoRequest
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.serialization.builtins.MapSerializer
+import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.encodeToJsonElement
 import org.json.JSONObject
 import java.io.File
 
@@ -108,7 +113,7 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
     try {
       scope.launch {
         val info = TruvideoSdkVideo.getInfo(videoFile(videoPath))
-        promise?.resolve(Json.encodeToString(info))
+        promise?.resolve(Json.encodeToString(TruvideoSdkVideoInformation.serializer(),info))
       }
     } catch (exception: Exception) {
       exception.printStackTrace()
@@ -236,14 +241,16 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
   }
 
   fun returnRequest(request : TruvideoSdkVideoRequest) : String{
-    return Json.encodeToString(
-      mapOf<String, Any?>(
+    val mainResponse = mapOf<String, Any?>(
         "id" to request.id,
         "createdAt" to request.createdAt,
         "status" to request.status.name,
         "type" to request.type.name,
         "updatedAt" to request.updatedAt
       )
+    return Json.encodeToString(
+      MapSerializer(String.serializer(), JsonElement.serializer()),
+      mainResponse.mapValues { Json.encodeToJsonElement(it.value) }
     )
   }
 
