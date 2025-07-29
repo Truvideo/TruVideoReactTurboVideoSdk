@@ -241,12 +241,12 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
   }
 
   fun returnRequest(request : TruvideoSdkVideoRequest) : String{
-    val mainResponse = mapOf<String, Any?>(
+    val mainResponse = mapOf<String, String?>(
         "id" to request.id,
-        "createdAt" to request.createdAt,
+        "createdAt" to request.createdAt.toString(),
         "status" to request.status.name,
         "type" to request.type.name,
-        "updatedAt" to request.updatedAt
+        "updatedAt" to request.updatedAt.toString()
       )
     return Json.encodeToString(
       MapSerializer(String.serializer(), JsonElement.serializer()),
