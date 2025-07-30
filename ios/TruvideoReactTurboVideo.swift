@@ -67,7 +67,7 @@ import Combine
                       "size": videoInfo.size,
                       "durationMillis": videoInfo.durationMillis,
                       "format": videoInfo.format,
-                      "videos": videoInfo.videos.map { video in
+                      "videoTracks": videoInfo.videos.map { video in
                           return [
                               "index": video.index,
                               "width": video.width,
@@ -83,7 +83,7 @@ import Combine
                               "durationMillis": video.durationMillis
                           ] as [String: Any]
                       },
-                      "audios": videoInfo.audios.map { audio in
+                      "audioTracks": videoInfo.audios.map { audio in
                         return [
                           "index": audio.index,
                           "codec": audio.codec,
