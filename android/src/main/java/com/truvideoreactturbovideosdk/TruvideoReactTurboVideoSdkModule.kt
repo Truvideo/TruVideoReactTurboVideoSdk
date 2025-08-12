@@ -11,9 +11,11 @@ import com.truvideo.sdk.video.model.TruvideoSdkVideoFile
 import com.truvideo.sdk.video.model.TruvideoSdkVideoFileDescriptor
 import com.truvideo.sdk.video.model.TruvideoSdkVideoFrameRate
 import com.truvideo.sdk.video.model.TruvideoSdkVideoRequest
+import com.truvideo.sdk.video.model.TruvideoSdkVideoRotation
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
 
@@ -110,7 +112,49 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
     try {
       scope.launch {
         val info = TruvideoSdkVideo.getInfo(videoFile(videoPath))
-        promise?.resolve(gson.toJson(info))
+
+        val videoTracks = JSONArray()
+        info.videoTracks.forEach {
+          val videoTrack = JSONObject()
+          videoTrack.put("index",it.index)
+          videoTrack.put("width",it.width)
+          videoTrack.put("height",it.height)
+          videoTrack.put("rotatedWidth",it.rotatedWidth)
+          videoTrack.put("rotatedHeight",it.rotatedHeight)
+          videoTrack.put("codec",it.codec)
+          videoTrack.put("codecTag",it.codecTag)
+          videoTrack.put("pixelFormat",it.pixelFormat)
+          videoTrack.put("bitrate",it.bitrate)
+          videoTrack.put("frameRate",it.frameRate)
+          videoTrack.put("rotation",it.rotation.name)
+          videoTrack.put("durationMillis",it.durationMillis)
+          videoTracks.put(videoTrack)
+        }
+
+        val audioTracks = JSONArray()
+        info.audioTracks.forEach {
+          val audioTrack = JSONObject()
+          audioTrack.put("index",it.index)
+          audioTrack.put("bitrate",it.bitrate)
+          audioTrack.put("sampleRate",it.sampleRate)
+          audioTrack.put("channels",it.channels)
+          audioTrack.put("codec",it.codec)
+          audioTrack.put("codecTag",it.codecTag)
+          audioTrack.put("durationMillis",it.durationMillis)
+          audioTrack.put("channelLayout",it.channelLayout)
+          audioTrack.put("sampleFormat",it.sampleFormat)
+          audioTracks.put(audioTrack)
+        }
+
+        val mainResponse = JSONObject().apply {
+          put("path",info.path)
+          put("size",info.size)
+          put("durationMillis",info.durationMillis)
+          put("format",info.format)
+          put("videoTracks",videoTracks)
+          put("audioTracks",audioTracks)
+        }
+        promise?.resolve(mainResponse.toString())
       }
     } catch (exception: Exception) {
       exception.printStackTrace()
@@ -238,15 +282,13 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
   }
 
   fun returnRequest(request : TruvideoSdkVideoRequest) : String{
-    return Gson().toJson(
-      mapOf<String, Any?>(
-        "id" to request.id,
-        "createdAt" to request.createdAt,
-        "status" to request.status.name,
-        "type" to request.type.name,
-        "updatedAt" to request.updatedAt
-      )
-    )
+    return JSONObject().apply{
+      put("id",request.id)
+      put("createdAt", request.createdAt)
+      put("status", request.status.name)
+      put("type", request.type.name)
+      put("updatedAt", request.updatedAt)
+    }.toString()
   }
 
   override fun generateThumbnail(
