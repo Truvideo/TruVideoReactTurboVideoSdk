@@ -97,7 +97,15 @@ import Combine
                         ] as [String: Any]
                       }
                     ]
-              resolve(dictionaryResult)
+          do{
+            let jsonData = try JSONSerialization.data(withJSONObject: dictionaryResult, options: [])
+              if let jsonString = String(data: jsonData, encoding: .utf8) {
+                print("json",jsonString)
+                resolve(jsonString)
+              }else{
+                resolve("{}")
+              }
+            }
           } catch {
               reject("SDK_Error", "get_Video_Info_Failed", error)
           }
