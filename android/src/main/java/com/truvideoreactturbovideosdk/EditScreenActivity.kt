@@ -29,17 +29,17 @@ class EditScreenActivity : AppCompatActivity() {
     val videoUri = intent.getStringExtra("videoUri")
     val resultPath = intent.getStringExtra("resultPath")
 //        val editScreen = TruvideoSdkVideo.initEditScreen(this)
-    editVideoLauncher = registerForActivityResult(TruvideoSdkVideoEditContract(), { result ->
+    editVideoLauncher = registerForActivityResult(TruvideoSdkVideoEditContract()) { result ->
       // edited video its on 'resultPath'
-      if(result == null){
+      if (result == null) {
         TruvideoReactTurboVideoSdkModule.mainPromise!!.resolve("")
         finish()
-      }else{
+      } else {
         TruvideoReactTurboVideoSdkModule.mainPromise!!.resolve(result)
         finish()
         Log.d("TAG", "editVideo: result=$result")
       }
-    })
+    }
 
     try {
       CoroutineScope(Dispatchers.Main).launch {
@@ -50,7 +50,7 @@ class EditScreenActivity : AppCompatActivity() {
       finish()
     }
   }
-  suspend fun editVideo(videoUri: String, resultPath: String) {
+  fun editVideo(videoUri: String, resultPath: String) {
     // Edit video and save to resultPath
     val input = TruvideoSdkVideoFile.custom(videoUri)
     val output = TruvideoSdkVideoFileDescriptor.custom(resultPath)

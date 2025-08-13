@@ -1,17 +1,16 @@
 package com.truvideoreactturbovideosdk
 
 import android.content.Intent
+import android.util.Log
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.module.annotations.ReactModule
-import com.google.gson.Gson
 import com.truvideo.sdk.video.TruvideoSdkVideo
 import com.truvideo.sdk.video.model.TruvideoSdkVideoFile
 import com.truvideo.sdk.video.model.TruvideoSdkVideoFileDescriptor
 import com.truvideo.sdk.video.model.TruvideoSdkVideoFrameRate
 import com.truvideo.sdk.video.model.TruvideoSdkVideoRequest
-import com.truvideo.sdk.video.model.TruvideoSdkVideoRotation
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -23,7 +22,6 @@ import java.io.File
 class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
   NativeTruvideoReactTurboVideoSdkSpec(reactContext) {
   val scope = CoroutineScope(Dispatchers.Main)
-  val gson = Gson()
 
   override fun getName(): String {
     return NAME
@@ -54,7 +52,7 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
         promise!!.resolve(returnRequest(request))
       }
       // Handle result
-      // the concated video its on 'resultVideoPath'
+      // the concat video its on 'resultVideoPath'
     } catch (exception: Exception) {
       // Handle error
       promise?.reject("Exception",exception.message!!)
@@ -77,7 +75,7 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
     val result = TruvideoSdkVideo.EncodeBuilder(
       videoFile(videoUri),
       videoFileDescriptor(resultPath))
-    val configuration = JSONObject(config)
+    val configuration = JSONObject(config!!)
     if(configuration.has("height")){
       result.height = configuration.getInt("height")
     }
@@ -195,7 +193,7 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
     try{
       val videoUriList = videoUris.toArrayList().map { it.toString() }
       val builder = TruvideoSdkVideo.MergeBuilder(listVideoFile(videoUriList), videoFileDescriptor(resultPath))
-      val configuration = JSONObject(config)
+      val configuration = JSONObject(config!!)
       if(configuration.has("height")){
         builder.height = configuration.getInt("height")
       }
@@ -217,7 +215,7 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
 //        when(configuration.getString("videoCodec")){
 //          "h264" -> builder.videoCodec = TruvideoSdkVideoVideoCodec.h264
 //          "h265" -> builder.videoCodec = TruvideoSdkVideoVideoCodec.h265
-//          "libx264" -> builder.videoCodec = TruvideoSdkVideoVideoCodec.libx264
+//          "libX264" -> builder.videoCodec = TruvideoSdkVideoVideoCodec.libX264
 //          else -> builder.videoCodec = TruvideoSdkVideoVideoCodec.defaultCodec
 //        }
 //      }
@@ -229,7 +227,7 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
       // the merged video its on 'resultVideoPath'
     }catch (exception:Exception){
       //Handle error
-      promise?.reject(exception.message.toString())
+      promise?.reject(exception.message.toString(),exception)
       exception.printStackTrace()
     }
   }
@@ -308,9 +306,15 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
         val result = TruvideoSdkVideo.createThumbnail(
           videoFile(videoPath),
           videoFileDescriptor(resultPath),
-          try{position!!.toLong()}catch (e : Exception){"0".toLong()},
-          try{width!!.toInt()}catch (e : Exception){"0".toInt()}, // or null
-          try{height!!.toInt()}catch (e:Exception){"0".toInt()} // or null
+          try{position!!.toLong()}catch (e : Exception){
+            Log.d("TAG", "position not valid: $e")
+            "0".toLong() },
+          try{width!!.toInt()}catch (e : Exception){
+            Log.d("TAG", "width not valid: $e")
+            "0".toInt()}, // or null
+          try{height!!.toInt()}catch (e:Exception){
+            Log.d("TAG", "height not valid: $e")
+            "0".toInt()} // or null
         )
         promise?.resolve(result)
       }
@@ -353,7 +357,6 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
   companion object {
     const val NAME = "TruvideoReactTurboVideoSdk"
     var mainPromise : Promise? = null
-    var promise2 : Promise?  = null
   }
 
   fun videoFile(inputPath : String): TruvideoSdkVideoFile {
