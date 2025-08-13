@@ -329,7 +329,7 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
     try{
       scope.launch {
         val result = TruvideoSdkVideo.clearNoise(videoFile(videoPath), videoFileDescriptor(resultPath))
-        promise?.resolve("Clean Noise Successful")
+        promise?.resolve(result)
       }
       // Handle result
       // the cleaned video will be stored in resultVideoPath
