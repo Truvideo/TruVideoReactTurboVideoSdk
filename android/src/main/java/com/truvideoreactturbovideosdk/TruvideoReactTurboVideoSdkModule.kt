@@ -36,11 +36,18 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
 
   override fun concatVideos(videoUris: ReadableArray?, resultPath: String?, promise: Promise?) {
     try {
-      if(videoUris== null || resultPath == null){
+      if(videoUris== null || resultPath == null) {
         promise?.resolve("input path or result path not valid")
         return
       }
       val videoUriList = videoUris.toArrayList().map { it.toString() }
+
+      videoUriList.forEach {
+        if(it.endsWith(".png") || it.endsWith(".jpg") || it.endsWith(".jpeg")){
+          promise?.resolve("input path must be video not image")
+          return
+        }
+      }
 
       val builder = TruvideoSdkVideo.ConcatBuilder(
         listVideoFile(videoUriList),
@@ -72,9 +79,14 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
       promise?.resolve("input path or result path not valid")
       return
     }
+    if(videoUri.endsWith(".png") || videoUri.endsWith(".jpg") || videoUri.endsWith(".jpeg")){
+      promise?.resolve("input path must be video not image")
+      return
+    }
     val result = TruvideoSdkVideo.EncodeBuilder(
       videoFile(videoUri),
       videoFileDescriptor(resultPath))
+
     val configuration = JSONObject(config!!)
     if(configuration.has("height")){
       result.height = configuration.getInt("height")
@@ -104,8 +116,11 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
 
   override fun getVideoInfo(videoPath: String?, promise: Promise?) {
     if(videoPath== null ){
-      promise?.resolve("input path or result path not valid")
+      promise?.resolve("input path is not valid")
       return
+    }
+    if(videoPath.endsWith(".png") || videoPath.endsWith(".jpg") || videoPath.endsWith(".jpeg")){
+      promise?.resolve("video path must be video not image")
     }
     try {
       scope.launch {
@@ -168,6 +183,12 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
     }
     try {
       val videoUriList = videoUris.toArrayList().map { it.toString() }
+      videoUriList.forEach {
+        if(it.endsWith(".png") || it.endsWith(".jpg") || it.endsWith(".jpeg")){
+          promise?.resolve("input path must be video not image")
+          return
+        }
+      }
       scope.launch {
         val result = TruvideoSdkVideo.compare(listVideoFile(videoUriList))
         promise?.resolve(result)
@@ -192,6 +213,12 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
     }
     try{
       val videoUriList = videoUris.toArrayList().map { it.toString() }
+      videoUriList.forEach {
+        if(it.endsWith(".png") || it.endsWith(".jpg") || it.endsWith(".jpeg")){
+          promise?.resolve("input path must be video not image")
+          return
+        }
+      }
       val builder = TruvideoSdkVideo.MergeBuilder(listVideoFile(videoUriList), videoFileDescriptor(resultPath))
       val configuration = JSONObject(config!!)
       if(configuration.has("height")){
@@ -210,15 +237,6 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
           else -> builder.framesRate = TruvideoSdkVideoFrameRate.defaultFrameRate
         }
       }
-
-//      if(configuration.has("videoCodec")){
-//        when(configuration.getString("videoCodec")){
-//          "h264" -> builder.videoCodec = TruvideoSdkVideoVideoCodec.h264
-//          "h265" -> builder.videoCodec = TruvideoSdkVideoVideoCodec.h265
-//          "libX264" -> builder.videoCodec = TruvideoSdkVideoVideoCodec.libX264
-//          else -> builder.videoCodec = TruvideoSdkVideoVideoCodec.defaultCodec
-//        }
-//      }
       scope.launch {
         val request = builder.build()
         promise?.resolve(returnRequest(request))
@@ -301,6 +319,10 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
       promise?.resolve("input path or result path not valid")
       return
     }
+    if(videoPath.endsWith(".png") || videoPath.endsWith(".jpg") || videoPath.endsWith(".jpeg")){
+      promise?.resolve("video path must be video not image")
+      return
+    }
     try {
       scope.launch {
         val result = TruvideoSdkVideo.createThumbnail(
@@ -330,6 +352,10 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
       promise?.resolve("input path or result path not valid")
       return
     }
+    if(videoPath.endsWith(".png") || videoPath.endsWith(".jpg") || videoPath.endsWith(".jpeg")){
+      promise?.resolve("video path must be video not image")
+      return
+    }
     try{
       scope.launch {
         val result = TruvideoSdkVideo.clearNoise(videoFile(videoPath), videoFileDescriptor(resultPath))
@@ -345,6 +371,10 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
   }
 
   override fun editVideo(videoUri: String?, resultPath: String?, promise: Promise?) {
+    if(videoUri!!.endsWith(".png") || videoUri!!.endsWith(".jpg") || videoUri!!.endsWith(".jpeg")){
+      promise?.resolve("video path must be video not image")
+      return
+    }
     mainPromise = promise
     currentActivity!!.startActivity(Intent(currentActivity, EditScreenActivity::class.java).putExtra("videoUri", videoUri).putExtra("resultPath", resultPath))
   }
