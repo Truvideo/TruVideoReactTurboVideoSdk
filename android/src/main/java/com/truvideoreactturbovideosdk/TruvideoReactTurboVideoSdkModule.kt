@@ -2,6 +2,7 @@ package com.truvideoreactturbovideosdk
 
 import android.content.Intent
 import android.util.Log
+import androidx.compose.ui.text.toLowerCase
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReadableArray
@@ -301,8 +302,8 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
     return JSONObject().apply{
       put("id",request.id)
       put("createdAt", request.createdAt)
-      put("status", request.status.name)
-      put("type", request.type.name)
+      put("status", request.status.name.lowercase())
+      put("type", request.type.name.lowercase())
       put("updatedAt", request.updatedAt)
     }.toString()
   }
