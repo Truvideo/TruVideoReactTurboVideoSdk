@@ -1,5 +1,6 @@
 package com.truvideoreactturbovideosdk
 
+import android.R
 import android.content.Intent
 import android.util.Log
 import androidx.compose.ui.text.toLowerCase
@@ -12,6 +13,7 @@ import com.truvideo.sdk.video.model.TruvideoSdkVideoFile
 import com.truvideo.sdk.video.model.TruvideoSdkVideoFileDescriptor
 import com.truvideo.sdk.video.model.TruvideoSdkVideoFrameRate
 import com.truvideo.sdk.video.model.TruvideoSdkVideoRequest
+import com.truvideo.sdk.video.model.TruvideoSdkVideoRequestStatus
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -262,6 +264,26 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
     }
   }
 
+  override fun getAllRequest(status : String,promise: Promise){
+    scope.launch {
+      val status = if(status == "CANCELED"){
+        TruvideoSdkVideoRequestStatus.CANCELED
+      }else if (status == "PROCESSING"){
+        TruvideoSdkVideoRequestStatus.PROCESSING
+      }else if (status == "COMPLETED" ){
+        TruvideoSdkVideoRequestStatus.COMPLETED
+      }else if (status == "IDLE"){
+        TruvideoSdkVideoRequestStatus.IDLE
+      }else if (status == "ERROR"){
+        TruvideoSdkVideoRequestStatus.ERROR
+      }else {
+        null
+      }
+      val request = TruvideoSdkVideo.getAllRequests(status)
+      promise.resolve(returnRequests(request))
+    }
+  }
+
   override fun processVideo(id : String,promise: Promise){
     try{
       scope.launch {
@@ -306,6 +328,22 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
       put("type", request.type.name.lowercase())
       put("updatedAt", request.updatedAt)
     }.toString()
+  }
+
+  fun returnRequests(requests: List<TruvideoSdkVideoRequest>): String {
+    val jsonArray = JSONArray()
+
+    for (request in requests) {
+      val jsonString = returnRequest(request)
+      try {
+        val jsonObject = JSONObject(jsonString)
+        jsonArray.put(jsonObject)
+      } catch (e: Exception) {
+        e.printStackTrace()
+      }
+    }
+
+    return jsonArray.toString()
   }
 
   override fun generateThumbnail(

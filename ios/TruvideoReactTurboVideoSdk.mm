@@ -74,6 +74,11 @@ RCT_EXPORT_MODULE()
   [truvideo getRequestByIdWithId:id resolve:resolve reject:reject];
 }
 
+- (void)getAllRequest:(nonnull NSString *)status resolve:(nonnull RCTPromiseResolveBlock)resolve reject:(nonnull RCTPromiseRejectBlock)reject {
+  TruVideoReactVideoSdkClass *truvideo = [[TruVideoReactVideoSdkClass alloc] init];
+  [truvideo getAllRequestWithStatus:status resolve:resolve reject:reject];
+}
+
 
 - (void)processVideo:(nonnull NSString *)id resolve:(nonnull RCTPromiseResolveBlock)resolve reject:(nonnull RCTPromiseRejectBlock)reject {
   TruVideoReactVideoSdkClass *truvideo = [[TruVideoReactVideoSdkClass alloc] init];

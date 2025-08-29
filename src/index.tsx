@@ -7,6 +7,30 @@ export function compareVideos(videoPath: string[]): Promise<string> {
   return TruvideoReactTurboVideoSdk.compareVideos(videoPath);
 }
 
+export async function getAllRequest(status: string): Promise<BuilderResponse[] | null> {
+  return TruvideoReactTurboVideoSdk.getAllRequest(status).then((response: string) => {
+      try {
+        const parsed: BuilderResponse[] = JSON.parse(response);
+        return parsed;
+      } catch (e) {
+        console.error("Failed to parse MediaData JSON:", e);
+        return null;
+      }
+    });;
+}
+
+export async function getRequestById(id: string): Promise<BuilderResponse | null> {
+  return TruvideoReactTurboVideoSdk.getRequestById(id).then((response: string) => {
+      try {
+        const parsed: BuilderResponse = JSON.parse(response);
+        return parsed;
+      } catch (e) {
+        console.error("Failed to parse MediaData JSON:", e);
+        return null;
+      }
+    });;
+}
+
 export function cleanNoise(
   videoUri: string,
   resultPath: string

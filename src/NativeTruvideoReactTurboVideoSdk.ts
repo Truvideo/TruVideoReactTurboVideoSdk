@@ -27,6 +27,7 @@ export interface Spec extends TurboModule {
   editVideo(videoUri: string, resultPath: string): Promise<string>;
   getResultPath(path: string): Promise<string>;
   getRequestById(id: string): Promise<string>;
+  getAllRequest(status: string): Promise<string>;
   processVideo(id: string): Promise<string>;
   cancelVideo(id: string): Promise<string>;
 }
