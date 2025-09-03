@@ -39,6 +39,14 @@ export interface MediaInfo {
   audioTracks : AudioTrack[];
 }
 
+export enum VideoStatus {
+  processing = 'processing',
+  completed = 'complete',
+  idle = 'idle',
+  cancel = 'cancelled',
+  error = 'error',
+}
+
 export function getVideoInfo(videoPath: string): Promise<MediaInfo | null> {
   return TruvideoReactTurboVideoSdk.getVideoInfo(videoPath).then((response: string) => {
       try {
@@ -62,8 +70,8 @@ export async function compareVideos(videoPath: string[]): Promise<Boolean> {
     });
 }
 
-export async function getAllRequest(status: string): Promise<BuilderResponse[] | null> {
-  return TruvideoReactTurboVideoSdk.getAllRequest(status).then((response: string) => {
+export async function getAllRequest(status? : VideoStatus): Promise<BuilderResponse[] | null> {
+  return TruvideoReactTurboVideoSdk.getAllRequest(status ? status : "").then((response: string) => {
       try {
         const parsed: BuilderResponse[] = JSON.parse(response);
         return parsed;
@@ -127,11 +135,17 @@ export enum FrameRate {
   sixtyFps = 'sixtyFps',
 }
 
+export enum BuilderType {
+  merge = 'merge',
+  concat = 'concat',
+  encode = 'encode',
+}
+
 export interface BuilderResponse {
   id: string;
   createdAt: string;
-  status: string;
-  type: string;
+  status: VideoStatus;
+  type: BuilderType;
   updatedAt: string;
 }
 

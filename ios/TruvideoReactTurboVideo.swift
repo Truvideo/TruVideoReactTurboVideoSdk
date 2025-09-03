@@ -347,10 +347,10 @@ import Combine
 
 
   func sendRequest(videoRequest : TruvideoSdkVideo.TruvideoSdkVideoRequest) -> String{
-    //let dateFormatter = ISO8601DateFormatter()
-    let dateFormatter = DateFormatter()
-    dateFormatter.dateFormat = "EEE MMM dd HH:mm:ss 'GMT'Z yyyy"
-    dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+    let dateFormatter = ISO8601DateFormatter()
+//    let dateFormatter = DateFormatter()
+//    dateFormatter.dateFormat = "EEE MMM dd HH:mm:ss 'GMT'Z yyyy"
+//    dateFormatter.locale = Locale(identifier: "en_US_POSIX")
     var type = videoRequest.type
     var typeString = ""
     if(type == .merge){
@@ -384,25 +384,25 @@ import Combine
   @objc public func getAllRequest(status : String,resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock){
     var cancellables = Set<AnyCancellable>()
     var statusData : TruvideoSdkVideoRequest.Status?
-    if (status == "IDLE"){
+    if (status == "idle"){
       statusData = .idle
-    }else if(status == "CANCELED"){
+    }else if(status == "cancelled"){
       statusData = .cancelled
-    }else if(status == "COMPLETED"){
+    }else if(status == "complete"){
       statusData = .complete
-    }else if(status == "ERROR"){
+    }else if(status == "error"){
       statusData = .error
-    }else if(status == "PROCESSING"){
+    }else if(status == "processing"){
       statusData = .processing
     }else {
       statusData = nil
     }
     
     let publisher = TruvideoSdkVideo.streamRequests(withStatus: statusData)
-    //let dateFormatter = ISO8601DateFormatter()
-    let dateFormatter = DateFormatter()
-    dateFormatter.dateFormat = "EEE MMM dd HH:mm:ss 'GMT'Z yyyy"
-    dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+    let dateFormatter = ISO8601DateFormatter()
+//    let dateFormatter = DateFormatter()
+//    dateFormatter.dateFormat = "EEE MMM dd HH:mm:ss 'GMT'Z yyyy"
+//    dateFormatter.locale = Locale(identifier: "en_US_POSIX")
       publisher
           .sink { videoRequest in
               // Handle each emitted TruvideoSdkVideoRequest
@@ -419,10 +419,10 @@ import Combine
     var cancellables = Set<AnyCancellable>()
     do {
       let publisher = try TruvideoSdkVideo.streamRequest(withId: UUID(uuidString :id) ?? UUID())
-      //let dateFormatter = ISO8601DateFormatter()
-      let dateFormatter = DateFormatter()
-      dateFormatter.dateFormat = "EEE MMM dd HH:mm:ss 'GMT'Z yyyy"
-      dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+      let dateFormatter = ISO8601DateFormatter()
+//      let dateFormatter = DateFormatter()
+//      dateFormatter.dateFormat = "EEE MMM dd HH:mm:ss 'GMT'Z yyyy"
+//      dateFormatter.locale = Locale(identifier: "en_US_POSIX")
         publisher
             .sink { videoRequest in
                 // Handle each emitted TruvideoSdkVideoRequest

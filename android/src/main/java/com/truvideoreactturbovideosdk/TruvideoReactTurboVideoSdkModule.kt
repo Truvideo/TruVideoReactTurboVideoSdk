@@ -20,6 +20,7 @@ import kotlinx.coroutines.launch
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
+import java.time.format.DateTimeFormatter
 
 @ReactModule(name = TruvideoReactTurboVideoSdkModule.NAME)
 class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
@@ -266,15 +267,15 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
 
   override fun getAllRequest(status : String,promise: Promise){
     scope.launch {
-      val status = if(status == "CANCELED"){
+      val status = if(status == "cancelled"){
         TruvideoSdkVideoRequestStatus.CANCELED
-      }else if (status == "PROCESSING"){
+      }else if (status == "processing"){
         TruvideoSdkVideoRequestStatus.PROCESSING
-      }else if (status == "COMPLETED" ){
+      }else if (status == "complete" ){
         TruvideoSdkVideoRequestStatus.COMPLETED
-      }else if (status == "IDLE"){
+      }else if (status == "idle"){
         TruvideoSdkVideoRequestStatus.IDLE
-      }else if (status == "ERROR"){
+      }else if (status == "error"){
         TruvideoSdkVideoRequestStatus.ERROR
       }else {
         null
@@ -323,10 +324,17 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
   fun returnRequest(request : TruvideoSdkVideoRequest) : String{
     return JSONObject().apply{
       put("id",request.id)
-      put("createdAt", request.createdAt)
-      put("status", request.status.name.lowercase())
+      put("createdAt", DateTimeFormatter.ISO_INSTANT.format(request.createdAt.toInstant()))
+      put("status", when(request.status){
+        TruvideoSdkVideoRequestStatus.IDLE -> "idle"
+        TruvideoSdkVideoRequestStatus.PROCESSING -> "processing"
+        TruvideoSdkVideoRequestStatus.ERROR -> "error"
+        TruvideoSdkVideoRequestStatus.COMPLETED -> "complete"
+        TruvideoSdkVideoRequestStatus.CANCELED -> "cancelled"
+
+      })
       put("type", request.type.name.lowercase())
-      put("updatedAt", request.updatedAt)
+      put("updatedAt", DateTimeFormatter.ISO_INSTANT.format(request.updatedAt.toInstant()))
     }.toString()
   }
 
@@ -355,15 +363,18 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
     promise: Promise?
   ) {
     if(videoPath== null || resultPath == null){
-      promise?.resolve("input path or result path not valid")
+      promise?.reject("video path error","input path or result path not valid")
       return
     }
     if(videoPath.endsWith(".png") || videoPath.endsWith(".jpg") || videoPath.endsWith(".jpeg")){
-      promise?.resolve("video path must be video not image")
+      promise?.reject("video path error","video path must be video not image")
       return
     }
     try {
       scope.launch {
+        if(TruvideoSdkVideo.getInfo(videoFile(videoPath)).durationMillis < position!!.toLong()){
+          promise?.reject("position error","position is less than video length")
+        }
         val result = TruvideoSdkVideo.createThumbnail(
           videoFile(videoPath),
           videoFileDescriptor(resultPath),
