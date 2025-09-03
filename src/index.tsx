@@ -1,10 +1,65 @@
 import TruvideoReactTurboVideoSdk from './NativeTruvideoReactTurboVideoSdk';
 
-export function getVideoInfo(videoPath: string): Promise<string> {
-  return TruvideoReactTurboVideoSdk.getVideoInfo(videoPath);
+// Define a class for the VideoTrack
+interface VideoTrack {
+  index : string;
+  width : string;
+  height : string;
+  rotatedWidth : string;
+  rotatedHeight : string;
+  codec : string;
+  codecTag : string;
+  pixelFormat : string;
+  bitrate : string;
+  frameRate : string;
+  rotation : string;
+  durationMillis : string;
 }
-export function compareVideos(videoPath: string[]): Promise<string> {
-  return TruvideoReactTurboVideoSdk.compareVideos(videoPath);
+
+// Define a class for the AudioTrack
+interface AudioTrack {
+  index: string;
+  bitrate: string;
+  sampleRate: string;
+  channels: string;
+  codec: string;
+  codecTag: string;
+  durationMillis: string;
+  channelLayout: string;
+  sampleFormat: string;
+}
+
+// Define a class for the main response data
+interface MediaInfo {
+  path : string;
+  size : number;
+  durationMillis : number;
+  format : string;
+  videoTracks : VideoTrack[];
+  audioTracks : AudioTrack[];
+}
+
+export function getVideoInfo(videoPath: string): Promise<MediaInfo | null> {
+  return TruvideoReactTurboVideoSdk.getVideoInfo(videoPath).then((response: string) => {
+      try {
+        const parsed: MediaInfo = JSON.parse(response);
+        return parsed;
+      } catch (e) {
+        console.error("Failed to parse MediaData JSON:", e);
+        return null;
+      }
+    });
+}
+export async function compareVideos(videoPath: string[]): Promise<Boolean> {
+  return TruvideoReactTurboVideoSdk.compareVideos(videoPath).then((response: string) => {
+      try {
+        const parsed: Boolean = JSON.parse(response);
+        return parsed;
+      } catch (e) {
+        console.error("Failed to parse MediaData JSON:", e);
+        return false;
+      }
+    });
 }
 
 export async function getAllRequest(status: string): Promise<BuilderResponse[] | null> {
