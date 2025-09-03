@@ -1,7 +1,7 @@
 import TruvideoReactTurboVideoSdk from './NativeTruvideoReactTurboVideoSdk';
 
 // Define a class for the VideoTrack
-interface VideoTrack {
+export interface VideoTrack {
   index : string;
   width : string;
   height : string;
@@ -17,7 +17,7 @@ interface VideoTrack {
 }
 
 // Define a class for the AudioTrack
-interface AudioTrack {
+export interface AudioTrack {
   index: string;
   bitrate: string;
   sampleRate: string;
@@ -30,7 +30,7 @@ interface AudioTrack {
 }
 
 // Define a class for the main response data
-interface MediaInfo {
+export interface MediaInfo {
   path : string;
   size : number;
   durationMillis : number;
