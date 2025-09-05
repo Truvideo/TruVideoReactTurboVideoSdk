@@ -63,7 +63,7 @@ import Combine
           
           
           let dictionaryResult : [String : Any] = [
-                      "path": videoInfo.path,
+                      "path": convertStringToURL(videoInfo.path).path,
                       "size": videoInfo.size,
                       "durationMillis": videoInfo.durationMillis,
                       "format": videoInfo.format,
