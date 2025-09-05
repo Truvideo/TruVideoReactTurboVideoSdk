@@ -118,6 +118,14 @@ import Combine
         }
         return url
     }
+    func convertURLToString(_ url: URL) -> String {
+        if url.isFileURL {
+            return url.path  // returns the local file system path
+        } else {
+            return url.absoluteString // returns the full URL string
+        }
+    }
+
     func createUrlArray(videos : [String]) -> [URL]{
         var urlArray: [URL] = []
         for item in videos {
@@ -137,7 +145,7 @@ import Combine
                     let outputPath :TruvideoSdkVideoFileDescriptor = .custom(rawPath: outputUrl.absoluteString)
                     // Generate a thumbnail for the provided video using TruvideoSdkVideo's thumbnailGenerator
                     let thumbnail = try await TruvideoSdkVideo.generateThumbnail(input: inputPath, output: outputPath, position: positionTime, width: Int(width), height: Int(height))
-                    resolve(thumbnail.generatedThumbnailURL.absoluteString)
+                    resolve(thumbnail.generatedThumbnailURL.path)
                     // Handle result - thumbnail.generatedThumbnailURL
                 } catch {
                     reject("json_error", "Error parsing JSON", error)
@@ -159,7 +167,7 @@ import Combine
                 let outputPath :TruvideoSdkVideoFileDescriptor = .custom(rawPath: outputUrl.absoluteString)
                 // Attempt to clean noise from the input video file using TruvideoSdkVideo's engine
                 let result = try await TruvideoSdkVideo.engine.clearNoiseForFile(input: inputPath, output: outputPath)
-                resolve(result.fileURL.absoluteString)
+                resolve(result.fileURL.path)
             } catch {
                 reject("json_error", "Error parsing JSON", error)
                 // Handle any errors that occur during the noise cleaning process
@@ -505,8 +513,8 @@ import Combine
             let outputPath :TruvideoSdkVideoFileDescriptor = .custom(rawPath: outputUrl.absoluteString)
             rootViewController.presentTruvideoSdkVideoEditorView(input: inputPath, output: outputPath, onComplete: {editionResult in
               if(editionResult.editedVideoURL != nil){
-                resolve(editionResult.editedVideoURL?.absoluteString)
-                print("Successfully edited", editionResult.editedVideoURL?.absoluteString)
+                resolve(editionResult.editedVideoURL?.path)
+                print("Successfully edited", editionResult.editedVideoURL?.path)
               }else{
                 resolve("")
                 print("Successfully edited", "")
