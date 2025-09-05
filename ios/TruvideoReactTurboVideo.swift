@@ -360,10 +360,18 @@ import Combine
     }else {
       typeString = "encode"
     }
+    var status : String =  switch videoRequest.status {
+      case .idle : "idle"
+      case .error: "error"
+      case .complete: "complete"
+      case .processing: "processing"
+      case .cancelled: "cancelled"
+      default:""
+    }
     let mainResponse: [String: String] = [
       "id": videoRequest.id.uuidString,
       "createdAt" : dateFormatter.string(from: videoRequest.createdAt),
-      "status" : "\(videoRequest.status.rawValue)",
+      "status" : status,
       "type" : typeString,
       "updatedAt" : dateFormatter.string(from: videoRequest.updatedAt)
     ]
@@ -496,8 +504,14 @@ import Combine
             let inputPath : TruvideoSdkVideoFile = .init(url: videoUrl)
             let outputPath :TruvideoSdkVideoFileDescriptor = .custom(rawPath: outputUrl.absoluteString)
             rootViewController.presentTruvideoSdkVideoEditorView(input: inputPath, output: outputPath, onComplete: {editionResult in
+              if(editionResult.editedVideoURL != nil){
                 resolve(editionResult.editedVideoURL?.absoluteString)
                 print("Successfully edited", editionResult.editedVideoURL?.absoluteString)
+              }else{
+                resolve("")
+                print("Successfully edited", "")
+              }
+                
             })
         }
     }

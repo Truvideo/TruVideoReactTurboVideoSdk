@@ -2,6 +2,7 @@ package com.truvideoreactturbovideosdk
 
 import android.R
 import android.content.Intent
+import android.os.Build
 import android.util.Log
 import androidx.compose.ui.text.toLowerCase
 import com.facebook.react.bridge.Promise
@@ -324,17 +325,22 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
   fun returnRequest(request : TruvideoSdkVideoRequest) : String{
     return JSONObject().apply{
       put("id",request.id)
-      put("createdAt", DateTimeFormatter.ISO_INSTANT.format(request.createdAt.toInstant()))
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        put("createdAt", DateTimeFormatter.ISO_INSTANT.format(request.createdAt.toInstant()))
+        put("updatedAt", DateTimeFormatter.ISO_INSTANT.format(request.updatedAt.toInstant()))
+      }else{
+        put("createdAt", request.createdAt)
+        put("updatedAt", request.updatedAt)
+      }
       put("status", when(request.status){
         TruvideoSdkVideoRequestStatus.IDLE -> "idle"
         TruvideoSdkVideoRequestStatus.PROCESSING -> "processing"
         TruvideoSdkVideoRequestStatus.ERROR -> "error"
         TruvideoSdkVideoRequestStatus.COMPLETED -> "complete"
         TruvideoSdkVideoRequestStatus.CANCELED -> "cancelled"
-
       })
       put("type", request.type.name.lowercase())
-      put("updatedAt", DateTimeFormatter.ISO_INSTANT.format(request.updatedAt.toInstant()))
+
     }.toString()
   }
 
