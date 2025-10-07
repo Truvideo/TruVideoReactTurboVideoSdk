@@ -142,7 +142,7 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
           videoTrack.put("codec",it.codec)
           videoTrack.put("codecTag",it.codecTag)
           videoTrack.put("pixelFormat",it.pixelFormat)
-          videoTrack.put("bitrate",it.bitrate)
+          videoTrack.put("bitRate",it.bitRate)
           videoTrack.put("frameRate",it.frameRate)
           videoTrack.put("rotation",it.rotation.name)
           videoTrack.put("durationMillis",it.durationMillis)
@@ -153,7 +153,7 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
         info.audioTracks.forEach {
           val audioTrack = JSONObject()
           audioTrack.put("index",it.index)
-          audioTrack.put("bitrate",it.bitrate)
+          audioTrack.put("bitRate",it.bitRate)
           audioTrack.put("sampleRate",it.sampleRate)
           audioTrack.put("channels",it.channels)
           audioTrack.put("codec",it.codec)
@@ -269,11 +269,11 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
   override fun getAllRequest(status : String,promise: Promise){
     scope.launch {
       val status = if(status == "cancelled"){
-        TruvideoSdkVideoRequestStatus.CANCELED
+        TruvideoSdkVideoRequestStatus.CANCELLED
       }else if (status == "processing"){
         TruvideoSdkVideoRequestStatus.PROCESSING
       }else if (status == "complete" ){
-        TruvideoSdkVideoRequestStatus.COMPLETED
+        TruvideoSdkVideoRequestStatus.COMPLETE
       }else if (status == "idle"){
         TruvideoSdkVideoRequestStatus.IDLE
       }else if (status == "error"){
@@ -336,8 +336,8 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
         TruvideoSdkVideoRequestStatus.IDLE -> "idle"
         TruvideoSdkVideoRequestStatus.PROCESSING -> "processing"
         TruvideoSdkVideoRequestStatus.ERROR -> "error"
-        TruvideoSdkVideoRequestStatus.COMPLETED -> "complete"
-        TruvideoSdkVideoRequestStatus.CANCELED -> "cancelled"
+        TruvideoSdkVideoRequestStatus.COMPLETE -> "complete"
+        TruvideoSdkVideoRequestStatus.CANCELLED -> "cancelled"
       })
       put("type", request.type.name.lowercase())
 

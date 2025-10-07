@@ -10,7 +10,7 @@ export interface VideoTrack {
   codec : string;
   codecTag : string;
   pixelFormat : string;
-  bitrate : string;
+  bitRate : string;
   frameRate : string;
   rotation : string;
   durationMillis : string;
@@ -19,7 +19,7 @@ export interface VideoTrack {
 // Define a class for the AudioTrack
 export interface AudioTrack {
   index: string;
-  bitrate: string;
+  bitRate: string;
   sampleRate: string;
   channels: string;
   codec: string;
