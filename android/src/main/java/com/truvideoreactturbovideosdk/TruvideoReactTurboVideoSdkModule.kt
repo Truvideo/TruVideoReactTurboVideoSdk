@@ -1,10 +1,8 @@
 package com.truvideoreactturbovideosdk
 
-import android.R
 import android.content.Intent
 import android.os.Build
 import android.util.Log
-import androidx.compose.ui.text.toLowerCase
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReadableArray
@@ -268,18 +266,25 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
 
   override fun getAllRequest(status : String,promise: Promise){
     scope.launch {
-      val status = if(status == "cancelled"){
-        TruvideoSdkVideoRequestStatus.CANCELLED
-      }else if (status == "processing"){
-        TruvideoSdkVideoRequestStatus.PROCESSING
-      }else if (status == "complete" ){
-        TruvideoSdkVideoRequestStatus.COMPLETE
-      }else if (status == "idle"){
-        TruvideoSdkVideoRequestStatus.IDLE
-      }else if (status == "error"){
-        TruvideoSdkVideoRequestStatus.ERROR
-      }else {
-        null
+      val status = when (status) {
+          "cancelled" -> {
+            TruvideoSdkVideoRequestStatus.CANCELLED
+          }
+          "processing" -> {
+            TruvideoSdkVideoRequestStatus.PROCESSING
+          }
+          "complete" -> {
+            TruvideoSdkVideoRequestStatus.COMPLETE
+          }
+          "idle" -> {
+            TruvideoSdkVideoRequestStatus.IDLE
+          }
+          "error" -> {
+            TruvideoSdkVideoRequestStatus.ERROR
+          }
+          else -> {
+            null
+          }
       }
       val request = TruvideoSdkVideo.getAllRequests(status)
       promise.resolve(returnRequests(request))
@@ -384,7 +389,7 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
         val result = TruvideoSdkVideo.createThumbnail(
           videoFile(videoPath),
           videoFileDescriptor(resultPath),
-          try{position!!.toLong()}catch (e : Exception){
+          try{position.toLong()}catch (e : Exception){
             Log.d("TAG", "position not valid: $e")
             "0".toLong() },
           try{width!!.toInt()}catch (e : Exception){
@@ -427,7 +432,7 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
   }
 
   override fun editVideo(videoUri: String?, resultPath: String?, promise: Promise?) {
-    if(videoUri!!.endsWith(".png") || videoUri!!.endsWith(".jpg") || videoUri!!.endsWith(".jpeg")){
+    if(videoUri!!.endsWith(".png") || videoUri.endsWith(".jpg") || videoUri.endsWith(".jpeg")){
       promise?.resolve("video path must be video not image")
       return
     }
