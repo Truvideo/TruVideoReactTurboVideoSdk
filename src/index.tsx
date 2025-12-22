@@ -200,7 +200,7 @@ export class MergeBuilder {
   private height: string = '';
   private width: string = '';
   private frameRate: string = '';
-  private mergeData: BuilderResponse | undefined;
+  public mergeData: BuilderResponse | undefined;
 
   constructor(filePaths: string[], resultPath: string) {
     if (!filePaths) {
@@ -239,7 +239,7 @@ export class MergeBuilder {
     }
   }
 
-  async build(): Promise<MergeBuilder> {
+  async build(): Promise<BuilderResponse> {
     const config = {
       height: this.height,
       width: this.width,
@@ -251,8 +251,8 @@ export class MergeBuilder {
       this.resultPath,
       JSON.stringify(config)
     );
-    this.mergeData = JSON.parse(response);
-    return this;
+    this.mergeData = JSON.parse(response) as BuilderResponse;
+    return this.mergeData;
   }
 
   async process(): Promise<BuilderResponse> {
@@ -285,7 +285,7 @@ export class MergeBuilder {
 export class ConcatBuilder {
   private _filePath: string[];
   private resultPath: string;
-  private concatData: BuilderResponse | undefined;
+  public concatData: BuilderResponse | undefined;
 
   constructor(filePaths: string[], resultPath: string) {
     if (!filePaths) {
@@ -298,13 +298,13 @@ export class ConcatBuilder {
     this.resultPath = resultPath;
   }
 
-  async build(): Promise<ConcatBuilder> {
+  async build(): Promise<BuilderResponse> {
     var response = await TruvideoReactTurboVideoSdk.concatVideos(
       this._filePath,
       this.resultPath
     );
-    this.concatData = JSON.parse(response);
-    return this;
+    this.concatData = JSON.parse(response) as BuilderResponse;
+    return this.concatData;
   }
 
   async process(): Promise<BuilderResponse> {
@@ -340,7 +340,7 @@ export class EncodeBuilder {
   private height: string = '';
   private width: string = '';
   private frameRate: string = '';
-  private mergeData: BuilderResponse | undefined;
+  public mergeData: BuilderResponse | undefined;
 
   constructor(filePaths: string, resultPath: string) {
     if (!filePaths) {
@@ -379,7 +379,7 @@ export class EncodeBuilder {
     }
   }
 
-  async build(): Promise<EncodeBuilder> {
+  async build(): Promise<BuilderResponse> {
     const config = {
       height: this.height,
       width: this.width,
@@ -391,8 +391,8 @@ export class EncodeBuilder {
       this.resultPath,
       JSON.stringify(config)
     );
-    this.mergeData = JSON.parse(response);
-    return this;
+    this.mergeData = JSON.parse(response) as BuilderResponse;
+    return this.mergeData;
   }
 
   async process(): Promise<BuilderResponse> {
