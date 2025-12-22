@@ -149,6 +149,51 @@ export interface BuilderResponse {
   updatedAt: string;
 }
 
+export class BuilderRequest {
+    id: string;
+    createdAt: string;
+    status: string;
+    type: BuilderType;
+    updatedAt: string;
+    builderData: BuilderResponse;
+    constructor(data: BuilderResponse) {
+        this.id = data.id;
+        this.createdAt = data.createdAt;
+        this.status = data.status;
+        this.type = data.type;
+        this.updatedAt = data.updatedAt;
+        this.builderData = data;
+    }
+
+    async process(): Promise<BuilderResponse> {
+        //return this.builderData;
+
+        if (!this.id) {
+          throw new Error(
+            'Call build() and ensure it succeeds before calling process().'
+          );
+        }
+        var response = await TruvideoReactTurboVideoSdk.processVideo(
+          this.id
+        );
+        this.builderData = JSON.parse(response) as BuilderResponse;
+        return this.builderData;
+    }
+
+    async cancel(): Promise<BuilderResponse> {
+        if (!this.id) {
+          throw new Error(
+            'Call build() and ensure it succeeds before calling process().'
+          );
+        }
+        var response = await TruvideoReactTurboVideoSdk.cancelVideo(
+          this.id
+        );
+        this.builderData = JSON.parse(response) as BuilderResponse;
+        return this.builderData;
+    }
+}
+
 export class MergeBuilder {
   private _filePath: string[];
   private resultPath: string;
