@@ -442,7 +442,7 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
 
   override fun getResultPath(path: String?, promise: Promise?) {
     val basePath  = currentActivity!!.filesDir
-    promise?.resolve( File("$basePath/camera/$path").path)
+    promise?.resolve( File("$basePath/$path").path)
   }
 
   companion object {
