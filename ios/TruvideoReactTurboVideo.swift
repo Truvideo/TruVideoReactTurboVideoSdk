@@ -397,62 +397,93 @@ import Combine
     }
   }
   
-  @objc public func getAllRequest(status : String,resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock){
-    var cancellables = Set<AnyCancellable>()
-    var statusData : TruvideoSdkVideoRequest.Status?
-    if (status == "idle"){
-      statusData = .idle
-    }else if(status == "cancelled"){
-      statusData = .cancelled
-    }else if(status == "complete"){
-      statusData = .complete
-    }else if(status == "error"){
-      statusData = .error
-    }else if(status == "processing"){
-      statusData = .processing
-    }else {
-      statusData = nil
-    }
-    
-    let publisher = TruvideoSdkVideo.streamRequests(withStatus: statusData)
-    let dateFormatter = ISO8601DateFormatter()
-//    let dateFormatter = DateFormatter()
-//    dateFormatter.dateFormat = "EEE MMM dd HH:mm:ss 'GMT'Z yyyy"
-//    dateFormatter.locale = Locale(identifier: "en_US_POSIX")
-      publisher
-          .sink { videoRequest in
-              // Handle each emitted TruvideoSdkVideoRequest
-            var jsonString = self.sendRequests(videoRequests: videoRequest)
-            resolve(jsonString)
-            cancellables.removeAll()
-          }
-          .store(in: &cancellables)
+    @objc public func getAllRequest(
+      status: String,
+      resolve: @escaping RCTPromiseResolveBlock,
+      reject: @escaping RCTPromiseRejectBlock
+    ) {
+      var cancellable: AnyCancellable?
+      var didFinish = false
 
-    
-  }
-  
-  @objc public func getRequestById(id : String,resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock){
-    var cancellables = Set<AnyCancellable>()
-    do {
-      let publisher = try TruvideoSdkVideo.streamRequest(withId: UUID(uuidString :id) ?? UUID())
-      let dateFormatter = ISO8601DateFormatter()
-//      let dateFormatter = DateFormatter()
-//      dateFormatter.dateFormat = "EEE MMM dd HH:mm:ss 'GMT'Z yyyy"
-//      dateFormatter.locale = Locale(identifier: "en_US_POSIX")
-        publisher
-            .sink { videoRequest in
-                // Handle each emitted TruvideoSdkVideoRequest
-              var jsonString = self.sendRequest(videoRequest : videoRequest)
-              resolve(jsonString)
-              cancellables.removeAll()
+      let statusData: TruvideoSdkVideoRequest.Status? = {
+        switch status {
+        case "idle": return .idle
+        case "cancelled": return .cancelled
+        case "complete": return .complete
+        case "error": return .error
+        case "processing": return .processing
+        default: return nil
+        }
+      }()
+
+      do {
+        let publisher = TruvideoSdkVideo.streamRequests(withStatus: statusData)
+
+        cancellable = publisher
+          .first() // ⭐ CRITICAL
+          .sink(
+            receiveCompletion: { completion in
+              if didFinish { return }
+              if case .failure(let error) = completion {
+                didFinish = true
+                reject("STREAM_ERROR", error.localizedDescription, error)
+                cancellable = nil
+              }
+            },
+            receiveValue: { videoRequests in
+              if didFinish { return }
+              didFinish = true
+              resolve(self.sendRequests(videoRequests: videoRequests))
+              cancellable = nil
             }
-            .store(in: &cancellables)
+          )
 
-    } catch {
-        // Handle thrown error from streamRequest
-        print("Failed to create publisher:", error)
+      } catch {
+        reject("INIT_ERROR", error.localizedDescription, error)
+      }
     }
-  }
+
+  
+    @objc public func getRequestById(
+      id: String,
+      resolve: @escaping RCTPromiseResolveBlock,
+      reject: @escaping RCTPromiseRejectBlock
+    ) {
+      guard let uuid = UUID(uuidString: id) else {
+        reject("INVALID_ID", "Invalid UUID", nil)
+        return
+      }
+
+      var cancellable: AnyCancellable?
+      var didFinish = false
+
+      do {
+        let publisher = try TruvideoSdkVideo.streamRequest(withId: uuid)
+
+        cancellable = publisher
+          .first() // ⭐ REQUIRED
+          .sink(
+            receiveCompletion: { completion in
+              if didFinish { return }
+              if case .failure(let error) = completion {
+                didFinish = true
+                reject("STREAM_ERROR", error.localizedDescription, error)
+                cancellable = nil
+              }
+            },
+            receiveValue: { videoRequest in
+              if didFinish { return }
+              didFinish = true
+              resolve(self.sendRequest(videoRequest: videoRequest))
+              cancellable = nil
+            }
+          )
+
+      } catch {
+        reject("INIT_ERROR", error.localizedDescription, error)
+      }
+    }
+
   
   @objc public func cancel(id : String,resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock){
     var cancellables = Set<AnyCancellable>()
@@ -476,30 +507,227 @@ import Combine
     }
   }
   
-  @objc public func process(id : String,resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock){
-    var cancellables = Set<AnyCancellable>()
-    do {
-      let publisher = try TruvideoSdkVideo.streamRequest(withId: UUID(uuidString :id) ?? UUID())
+//  @objc public func process(id : String,resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock){
+//    var cancellables = Set<AnyCancellable>()
+//    do {
+//      let publisher = try TruvideoSdkVideo.streamRequest(withId: UUID(uuidString :id) ?? UUID())
+//        publisher
+//            .sink { videoRequest in
+//                // Handle each emitted TruvideoSdkVideoRequest
+//              Task{
+//                do {
+//                  var data = try await videoRequest.process()
+//                  resolve(self.sendRequest(videoRequest: videoRequest))
+//                  cancellables.removeAll()
+//                }catch{
+//                  
+//                }
+//              }
+//            }
+//            .store(in: &cancellables)
+//    } catch {
+//        // Handle thrown error from streamRequest
+//        print("Failed to create publisher:", error)
+//    }
+//  }
+    @objc public func process(
+      id: String,
+      resolve: @escaping RCTPromiseResolveBlock,
+      reject: @escaping RCTPromiseRejectBlock
+    ) {
+      // BREAKPOINT 1: Entry point
+      print("🔵 [STEP 1] Starting process for ID: \(id)")
+      
+      guard let uuid = UUID(uuidString: id) else {
+        print("🔴 [ERROR] Invalid UUID: \(id)")
+        reject("INVALID_ID", "Invalid UUID", nil)
+        return
+      }
+      
+      print("🔵 [STEP 2] UUID validated: \(uuid)")
+      
+      do {
+        let publisher = try TruvideoSdkVideo.streamRequest(withId: uuid)
+        print("🔵 [STEP 3] Publisher created successfully")
+        
         publisher
-            .sink { videoRequest in
-                // Handle each emitted TruvideoSdkVideoRequest
-              Task{
+          .first()
+          .sink(
+            receiveCompletion: { completion in
+              // BREAKPOINT 2: Completion handler
+              print("🔵 [STEP 4] Publisher completion: \(completion)")
+              if case .failure(let error) = completion {
+                print("🔴 [ERROR] Publisher failed: \(error.localizedDescription)")
+                reject("STREAM_ERROR", error.localizedDescription, error)
+              }
+            },
+            receiveValue: { videoRequest in
+              // BREAKPOINT 3: Received video request
+              print("🔵 [STEP 5] Received video request")
+              print("   - ID: \(videoRequest.id)")
+              print("   - Status: \(videoRequest.status)")
+              print("   - Type: \(videoRequest.type)")
+              print("   - Created: \(videoRequest.createdAt)")
+              print("   - Updated: \(videoRequest.updatedAt)")
+              
+              Task {
                 do {
-                  var data = try await videoRequest.process()
-                  resolve(self.sendRequest(videoRequest: videoRequest))
-                  cancellables.removeAll()
-                }catch{
+                  // BREAKPOINT 4: Before processing
+                  print("🔵 [STEP 6] Calling videoRequest.process()...")
+                  let processStartTime = Date()
                   
+                  try await videoRequest.process()
+                  
+                  // BREAKPOINT 5: After processing
+                  let processDuration = Date().timeIntervalSince(processStartTime)
+                  print("🔵 [STEP 7] videoRequest.process() completed in \(processDuration) seconds")
+                  
+                  // BREAKPOINT 6: Fetching updated status
+                  print("🔵 [STEP 8] Fetching updated request status...")
+                  let updatedPublisher = try TruvideoSdkVideo.streamRequest(withId: uuid)
+                  
+                  var cancellable: AnyCancellable?
+                  cancellable = updatedPublisher
+                    .first()
+                    .sink(
+                      receiveCompletion: { innerCompletion in
+                        print("🔵 [STEP 9] Updated publisher completion: \(innerCompletion)")
+                        cancellable = nil
+                      },
+                      receiveValue: { updatedRequest in
+                        // BREAKPOINT 7: Received updated request
+                        print("🔵 [STEP 10] Received updated request")
+                        print("   - Status after processing: \(updatedRequest.status)")
+                        print("   - Updated at: \(updatedRequest.updatedAt)")
+                        
+                        // BREAKPOINT 8: Converting to JSON
+                        print("🔵 [STEP 11] Converting request to JSON response...")
+                        let response = self.convertRequestToJSON(videoRequest: updatedRequest)
+                        print("🔵 [STEP 12] JSON response: \(response)")
+                        
+                        // BREAKPOINT 9: Status check
+                        switch updatedRequest.status {
+                        case .complete:
+                          print("✅ [SUCCESS] Video processing completed successfully")
+                          resolve(response)
+                          
+                        case .error:
+                          print("🔴 [ERROR] Video processing failed with error status")
+                          reject("PROCESS_ERROR", "Video processing failed", nil)
+                          
+                        case .processing:
+                          print("⚠️ [WARNING] Video still processing after process() returned")
+                          reject("PROCESS_ERROR", "Video processing incomplete: still processing", nil)
+                          
+                        case .idle:
+                          print("⚠️ [WARNING] Video status is still idle after process()")
+                          reject("PROCESS_ERROR", "Video processing incomplete: idle", nil)
+                          
+                        case .cancelled:
+                          print("⚠️ [WARNING] Video processing was cancelled")
+                          reject("PROCESS_ERROR", "Video processing was cancelled", nil)
+                          
+                        @unknown default:
+                          print("⚠️ [WARNING] Unknown video status: \(updatedRequest.status)")
+                          reject("PROCESS_ERROR", "Video processing incomplete: unknown status", nil)
+                        }
+                        
+                        cancellable = nil
+                      }
+                    )
+                  
+                } catch {
+                  // BREAKPOINT 10: Catch error
+                  print("🔴 [ERROR] Processing exception caught")
+                  print("   - Error: \(error)")
+                  print("   - Localized: \(error.localizedDescription)")
+                  if let nsError = error as NSError? {
+                    print("   - Domain: \(nsError.domain)")
+                    print("   - Code: \(nsError.code)")
+                    print("   - UserInfo: \(nsError.userInfo)")
+                  }
+                  reject("PROCESS_ERROR", error.localizedDescription, error)
                 }
               }
             }
-            .store(in: &cancellables)
-    } catch {
-        // Handle thrown error from streamRequest
-        print("Failed to create publisher:", error)
+          )
+          .store(in: &requestCancellables)
+        
+      } catch {
+        // BREAKPOINT 11: Initial catch
+        print("🔴 [ERROR] Failed to create publisher")
+        print("   - Error: \(error)")
+        print("   - Localized: \(error.localizedDescription)")
+        reject("INIT_ERROR", error.localizedDescription, error)
+      }
     }
-  }
-  
+ 
+    private var requestCancellables = Set<AnyCancellable>()
+ 
+  // MARK: - Helper Method
+    private func convertRequestToJSON(videoRequest: TruvideoSdkVideo.TruvideoSdkVideoRequest) -> String {
+      print("🔵 [JSON] Converting request to JSON...")
+      
+      let dateFormatter = ISO8601DateFormatter()
+      
+      // Convert type enum to string
+      let typeString: String
+      switch videoRequest.type {
+      case .merge:
+        typeString = "merge"
+      case .concat:
+        typeString = "concat"
+      default:
+        typeString = "encode"
+      }
+      print("🔵 [JSON] Type: \(typeString)")
+      
+      // Convert status enum to string
+      let statusString: String
+      switch videoRequest.status {
+      case .idle:
+        statusString = "idle"
+      case .error:
+        statusString = "error"
+      case .complete:
+        statusString = "complete"
+      case .processing:
+        statusString = "processing"
+      case .cancelled:
+        statusString = "cancelled"
+      default:
+        statusString = ""
+      }
+      print("🔵 [JSON] Status: \(statusString)")
+      
+      // Build response dictionary
+      let mainResponse: [String: String] = [
+        "id": videoRequest.id.uuidString,
+        "createdAt": dateFormatter.string(from: videoRequest.createdAt),
+        "status": statusString,
+        "type": typeString,
+        "updatedAt": dateFormatter.string(from: videoRequest.updatedAt)
+      ]
+      
+      print("🔵 [JSON] Response dictionary: \(mainResponse)")
+      
+      do {
+        let jsonData = try JSONSerialization.data(withJSONObject: mainResponse, options: [])
+        
+        if let jsonString = String(data: jsonData, encoding: .utf8) {
+          print("🔵 [JSON] Successfully created JSON string: \(jsonString)")
+          return jsonString
+        } else {
+          print("🔴 [JSON ERROR] Failed to convert data to string")
+          return "{}"
+        }
+        
+      } catch {
+        print("🔴 [JSON ERROR] JSONSerialization failed: \(error)")
+        return "{}"
+      }
+    }
+ 
   
   @objc public func editVideo(video : String,output : String,resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock){
         DispatchQueue.main.async{
