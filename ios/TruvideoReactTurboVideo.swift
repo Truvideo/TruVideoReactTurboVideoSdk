@@ -415,32 +415,53 @@ import Combine
         default: return nil
         }
       }()
-
+      
       do {
-        let publisher = TruvideoSdkVideo.streamRequests(withStatus: statusData)
-
-        cancellable = publisher
-          .first() // ⭐ CRITICAL
-          .sink(
-            receiveCompletion: { completion in
-              if didFinish { return }
-              if case .failure(let error) = completion {
-                didFinish = true
-                reject("STREAM_ERROR", error.localizedDescription, error)
-                cancellable = nil
-              }
-            },
-            receiveValue: { videoRequests in
-              if didFinish { return }
-              didFinish = true
-              resolve(self.sendRequests(videoRequests: videoRequests))
-              cancellable = nil
-            }
-          )
-
+          // If the SDK supports passing nil to get all, use statusData directly.
+          // If not, you may need a separate non-filtered API.
+          if(statusData == nil){
+              let requests = try TruvideoSdkVideo.getRequests(withStatus: .idle)
+              let cancelled = try TruvideoSdkVideo.getRequests(withStatus: .cancelled)
+              let complete = try TruvideoSdkVideo.getRequests(withStatus: .complete)
+              let errorRequest = try TruvideoSdkVideo.getRequests(withStatus: .error)
+              let processingRequest = try TruvideoSdkVideo.getRequests(withStatus: .processing)
+              let requestsTotal: [TruvideoSdkVideoRequest] = requests + complete + errorRequest + processingRequest + cancelled + requests
+              let json = self.sendRequests(videoRequests: requestsTotal)
+              resolve(json)
+          }else{
+              let requests = try TruvideoSdkVideo.getRequests(withStatus: statusData ?? .idle)
+              let json = self.sendRequests(videoRequests: requests)
+              resolve(json)
+          }
       } catch {
-        reject("INIT_ERROR", error.localizedDescription, error)
+          reject("GET_REQUESTS_ERROR", "Failed to get requests", error)
       }
+
+//      do {
+//        let publisher = TruvideoSdkVideo.streamRequests(withStatus: statusData)
+//
+//        cancellable = publisher
+//          .first() // ⭐ CRITICAL
+//          .sink(
+//            receiveCompletion: { completion in
+//              if didFinish { return }
+//              if case .failure(let error) = completion {
+//                didFinish = true
+//                reject("STREAM_ERROR", error.localizedDescription, error)
+//                cancellable = nil
+//              }
+//            },
+//            receiveValue: { videoRequests in
+//              if didFinish { return }
+//              didFinish = true
+//              resolve(self.sendRequests(videoRequests: videoRequests))
+//              cancellable = nil
+//            }
+//          )
+//
+//      } catch {
+//        reject("INIT_ERROR", error.localizedDescription, error)
+//      }
     }
 
   
