@@ -425,7 +425,7 @@ import Combine
               let complete = try TruvideoSdkVideo.getRequests(withStatus: .complete)
               let errorRequest = try TruvideoSdkVideo.getRequests(withStatus: .error)
               let processingRequest = try TruvideoSdkVideo.getRequests(withStatus: .processing)
-              let requestsTotal: [TruvideoSdkVideoRequest] = requests + complete + errorRequest + processingRequest + cancelled + requests
+              let requestsTotal: [TruvideoSdkVideoRequest] = requests + complete + errorRequest + processingRequest + cancelled 
               let json = self.sendRequests(videoRequests: requestsTotal)
               resolve(json)
           }else{
