@@ -8,7 +8,7 @@ buildscript {
   }
 
   dependencies {
-    classpath "com.android.tools.build:gradle:7.2.1"
+    classpath "com.android.tools.build:gradle:8.7.2"
     // noinspection DifferentKotlinGradleVersion
     classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
   }
@@ -82,8 +82,14 @@ android {
   }
 
   compileOptions {
-    sourceCompatibility JavaVersion.VERSION_1_8
-    targetCompatibility JavaVersion.VERSION_1_8
+    sourceCompatibility JavaVersion.VERSION_17
+    targetCompatibility JavaVersion.VERSION_17
+    coreLibraryDesugaringEnabled true
+  }
+
+  kotlinOptions {
+    jvmTarget = "17"
+    freeCompilerArgs += ["-Xskip-metadata-version-check"]
   }
 
   sourceSets {
@@ -105,18 +111,58 @@ repositories {
 
 def kotlin_version = getExtOrDefault("kotlinVersion")
 
+// Force Kotlin stdlib version - allow 2.2.0 for Truvideo SDK compatibility
+configurations.all {
+  resolutionStrategy {
+    // Don't force downgrade - allow SDK to use 2.2.0 if needed
+    // but ensure minimum version compatibility
+    eachDependency { DependencyResolveDetails details ->
+      if (details.requested.group == 'org.jetbrains.kotlin' && 
+          details.requested.name.startsWith('kotlin-stdlib')) {
+        // Allow 2.2.0 or higher for compatibility with Truvideo SDK
+        def requestedVersion = details.requested.version
+        if (requestedVersion != null && 
+            (requestedVersion.startsWith('2.2') || requestedVersion.startsWith('2.3') || requestedVersion.startsWith('2.4'))) {
+          // Keep the higher version
+          details.useVersion(requestedVersion)
+        } else {
+          // Use at least 2.2.0 for kotlin.time.Clock.System support
+          details.useVersion("2.2.0")
+        }
+      }
+    }
+  }
+}
+
+// Configure Kotlin extension
+kotlin {
+    jvmToolchain(17)
+}
+
 dependencies {
   // For < 0.71, this will be from the local maven repo
   // For > 0.71, this will be replaced by `com.facebook.react:react-android:$version` by react gradle plugin
   //noinspection GradleDynamicVersion
   implementation "com.facebook.react:react-native:+"
-  implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-  implementation "com.github.Truvideo:truvideo-sdk-android-video:78.1.7"
+  // Use 2.2.0 for kotlin.time.Clock.System support required by Truvideo SDK
+  api "org.jetbrains.kotlin:kotlin-stdlib:2.2.0"
+  api "org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.2.0"
+  implementation "com.github.Truvideo:truvideo-sdk-android-video:79.1.2"
   implementation 'androidx.appcompat:appcompat:1.7.0'
   implementation 'com.google.android.material:material:1.12.0'
 
   implementation 'androidx.activity:activity:1.9.0'
   implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+  
+  // Kodein DI dependency required by Truvideo SDK
+  implementation 'org.kodein.di:kodein-di:7.30.0'
+  implementation 'org.kodein.di:kodein-di-framework-android-x:7.30.0'
+  
+  // Multiplatform Settings dependency required by Truvideo SDK
+  implementation 'com.russhwolf:multiplatform-settings-android:1.3.0'
+  
+  // Core Library Desugaring for java.time APIs on Android < 26
+  coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.4'
 }
 
 if (isNewArchitectureEnabled()) {

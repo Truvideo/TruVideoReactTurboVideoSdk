@@ -8,3 +8,8 @@
 #   http://developer.android.com/guide/developing/tools/proguard.html
 
 # Add any project specific keep options here:
+
+# Keep Kotlin time classes (required by Truvideo SDK)
+-keep class kotlin.time.** { *; }
+-keep class kotlin.time.Clock { *; }
+-keep class kotlin.time.Clock$System { *; }
