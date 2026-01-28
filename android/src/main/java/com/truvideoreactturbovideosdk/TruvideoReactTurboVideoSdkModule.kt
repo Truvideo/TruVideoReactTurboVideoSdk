@@ -365,71 +365,90 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
     return jsonArray.toString()
   }
 
-  override fun generateThumbnail(
-    videoPath: String?,
-    resultPath: String?,
-    position: String?,
-    width: String?,
-    height: String?,
-    promise: Promise?
-  ) {
-    if(videoPath== null || resultPath == null){
-      promise?.reject("video path error","input path or result path not valid")
-      return
-    }
-    if(videoPath.endsWith(".png") || videoPath.endsWith(".jpg") || videoPath.endsWith(".jpeg")){
-      promise?.reject("video path error","video path must be video not image")
-      return
-    }
-    try {
-      scope.launch {
-        if(TruvideoSdkVideo.getInfo(videoFile(videoPath)).durationMillis < position!!.toLong()){
-          promise?.reject("position error","position is less than video length")
+    override fun generateThumbnail(
+        videoPath: String?,
+        resultPath: String?,
+        position: String?,
+        width: String?,
+        height: String?,
+        promise: Promise?
+    ) {
+        if(videoPath == null || resultPath == null){
+            promise?.reject("video path error","input path or result path not valid")
+            return
         }
-        val result = TruvideoSdkVideo.createThumbnail(
-          videoFile(videoPath),
-          videoFileDescriptor(resultPath),
-          try{position.toLong()}catch (e : Exception){
-            Log.d("TAG", "position not valid: $e")
-            "0".toLong() },
-          try{width!!.toInt()}catch (e : Exception){
-            Log.d("TAG", "width not valid: $e")
-            "0".toInt()}, // or null
-          try{height!!.toInt()}catch (e:Exception){
-            Log.d("TAG", "height not valid: $e")
-            "0".toInt()} // or null
-        )
-        promise?.resolve(result)
-      }
-    } catch (exception: Exception) {
-      // Handle error
-      promise?.reject("Exception",exception.message.toString())
-      exception.printStackTrace()
-    }
-  }
+        if(videoPath.endsWith(".png") || videoPath.endsWith(".jpg") || videoPath.endsWith(".jpeg")){
+            promise?.reject("video path error","video path must be video not image")
+            return
+        }
 
-  override fun cleanNoise(videoPath: String?, resultPath: String?, promise: Promise?) {
-    if(videoPath== null || resultPath == null){
-      promise?.resolve("input path or result path not valid")
-      return
+        scope.launch {
+            try {
+                // Get video info first
+                val videoInfo = TruvideoSdkVideo.getInfo(videoFile(videoPath))
+                val positionLong = position?.toLongOrNull() ?: 0L
+
+                // Validate position is within video duration
+                if(positionLong > videoInfo.durationMillis) {
+                    promise?.reject(
+                        "position error",
+                        "Position ($positionLong ms) exceeds video duration (${videoInfo.durationMillis} ms)"
+                    )
+                    return@launch
+                }
+
+                // Create thumbnail
+                val result = TruvideoSdkVideo.createThumbnail(
+                    videoFile(videoPath),
+                    videoFileDescriptor(resultPath),
+                    positionLong,
+                    width?.toIntOrNull() ?: 0,
+                    height?.toIntOrNull() ?: 0
+                )
+
+                promise?.resolve(result)
+
+            } catch (e: truvideo.sdk.common.exceptions.TruvideoSdkException) {
+                // Specific handling for SDK exceptions
+                Log.e(NAME, "TruvideoSdkException in generateThumbnail: ${e.message}", e)
+                promise?.reject("TruvideoSdkException", e.message ?: "Unknown SDK error")
+
+            } catch (e: Exception) {
+                // Generic exception handling
+                Log.e(NAME, "Exception in generateThumbnail: ${e.message}", e)
+                promise?.reject("Exception", e.message ?: "Unknown error")
+            }
+        }
     }
-    if(videoPath.endsWith(".png") || videoPath.endsWith(".jpg") || videoPath.endsWith(".jpeg")){
-      promise?.resolve("video path must be video not image")
-      return
+
+    override fun cleanNoise(videoPath: String?, resultPath: String?, promise: Promise?) {
+        if(videoPath == null || resultPath == null){
+            promise?.reject("path error", "input path or result path not valid")
+            return
+        }
+        if(videoPath.endsWith(".png") || videoPath.endsWith(".jpg") || videoPath.endsWith(".jpeg")){
+            promise?.reject("path error", "video path must be video not image")
+            return
+        }
+
+        scope.launch {
+            try {
+                val result = TruvideoSdkVideo.clearNoise(
+                    videoFile(videoPath),
+                    videoFileDescriptor(resultPath)
+                )
+                promise?.resolve(result)
+
+            } catch (e: truvideo.sdk.common.exceptions.TruvideoSdkException) {
+                Log.e(NAME, "TruvideoSdkException in cleanNoise: ${e.message}", e)
+                promise?.reject("TruvideoSdkException", e.message ?: "Unknown SDK error")
+
+            } catch (e: Exception) {
+                Log.e(NAME, "Exception in cleanNoise: ${e.message}", e)
+                promise?.reject("Exception", e.message ?: "Unknown error")
+            }
+        }
     }
-    try{
-      scope.launch {
-        val result = TruvideoSdkVideo.clearNoise(videoFile(videoPath), videoFileDescriptor(resultPath))
-        promise?.resolve(result)
-      }
-      // Handle result
-      // the cleaned video will be stored in resultVideoPath
-    }catch (exception:Exception){
-      // Handle error
-      promise?.reject("Exception",exception.message.toString())
-      exception.printStackTrace()
-    }
-  }
 
   override fun editVideo(videoUri: String?, resultPath: String?, promise: Promise?) {
     if(videoUri!!.endsWith(".png") || videoUri.endsWith(".jpg") || videoUri.endsWith(".jpeg")){
