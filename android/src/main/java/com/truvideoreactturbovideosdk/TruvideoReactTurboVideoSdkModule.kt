@@ -24,7 +24,7 @@ import java.time.format.DateTimeFormatter
 @ReactModule(name = TruvideoReactTurboVideoSdkModule.NAME)
 class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
   NativeTruvideoReactTurboVideoSdkSpec(reactContext) {
-  val scope = CoroutineScope(Dispatchers.Main)
+  val scope = CoroutineScope(Dispatchers.IO)
 
   override fun getName(): String {
     return NAME
@@ -125,8 +125,9 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
     if(videoPath.endsWith(".png") || videoPath.endsWith(".jpg") || videoPath.endsWith(".jpeg")){
       promise?.resolve("video path must be video not image")
     }
-    try {
-      scope.launch {
+
+    scope.launch {
+      try { 
         val info = TruvideoSdkVideo.getInfo(videoFile(videoPath))
 
         val videoTracks = JSONArray()
@@ -171,11 +172,14 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
           put("audioTracks",audioTracks)
         }
         promise?.resolve(mainResponse.toString())
+
+      } catch (e: truvideo.sdk.common.exceptions.TruvideoSdkException) {
+        Log.e(NAME, "TruvideoSdkException in getVideoInfo: ${e.message}", e)
+        promise?.reject("TruvideoSdkException", e.message ?: "Unknown SDK error")
+      } catch (exception: Exception) {
+        exception.printStackTrace()
+        promise?.reject("Exception", exception.message.toString())
       }
-    } catch (exception: Exception) {
-      exception.printStackTrace()
-      promise?.reject("Exception",exception.message.toString())
-      // Handle error
     }
   }
 
@@ -456,7 +460,11 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
       return
     }
     mainPromise = promise
-    currentActivity!!.startActivity(Intent(currentActivity, EditScreenActivity::class.java).putExtra("videoUri", videoUri).putExtra("resultPath", resultPath))
+    currentActivity!!.startActivity(
+      Intent(currentActivity, EditScreenActivity::class.java)
+        .putExtra("videoUri", videoUri)
+        .putExtra("resultPath", resultPath)
+    )
   }
 
   override fun getResultPath(path: String?, promise: Promise?) {
