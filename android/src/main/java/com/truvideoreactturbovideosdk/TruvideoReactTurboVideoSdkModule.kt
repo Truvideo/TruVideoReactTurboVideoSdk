@@ -257,16 +257,6 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
     }
   }
 
-  override fun getRequestById(id : String,promise: Promise){
-    try{
-      scope.launch {
-        val request  = TruvideoSdkVideo.getRequestById(id)
-        promise.resolve(returnRequest(request!!))
-      }
-    }catch (e: Exception){
-      promise.reject("Exception",e.message)
-    }
-  }
 
   override fun getAllRequest(status : String,promise: Promise){
     scope.launch {
@@ -295,15 +285,42 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
     }
   }
 
-  override fun processVideo(id : String,promise: Promise){
-    try{
-      scope.launch {
+  override fun processVideo(id: String, promise: Promise) {
+    scope.launch {
+      try {
         val request = TruvideoSdkVideo.getRequestById(id)
-        request!!.process()
+        if (request == null) {
+          promise.reject("Exception", "Request not found for id: $id")
+          return@launch
+        }
+        request.process()
         promise.resolve(returnRequest(request))
+      } catch (e: truvideo.sdk.common.exceptions.TruvideoSdkException) {
+        Log.e(NAME, "TruvideoSdkException in processVideo: ${e.message}", e)
+        promise.reject("TruvideoSdkException", e.message ?: "Unknown SDK error")
+      } catch (e: Exception) {
+        Log.e(NAME, "Exception in processVideo: ${e.message}", e)
+        promise.reject("Exception", e.message ?: "Unknown error")
       }
-    }catch (e: Exception){
-      promise.reject("Exception",e.message)
+    }
+  }
+
+  override fun getRequestById(id: String, promise: Promise) {
+    scope.launch {
+      try {
+        val request = TruvideoSdkVideo.getRequestById(id)
+        if (request == null) {
+          promise.reject("Exception", "Request not found for id: $id")
+          return@launch
+        }
+        promise.resolve(returnRequest(request))
+      } catch (e: truvideo.sdk.common.exceptions.TruvideoSdkException) {
+        Log.e(NAME, "TruvideoSdkException in getRequestById: ${e.message}", e)
+        promise.reject("TruvideoSdkException", e.message ?: "Unknown SDK error")
+      } catch (e: Exception) {
+        Log.e(NAME, "Exception in getRequestById: ${e.message}", e)
+        promise.reject("Exception", e.message ?: "Unknown error")
+      }
     }
   }
 
@@ -319,15 +336,24 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
     }
   }
 
-  override fun cancelVideo(id : String,promise: Promise){
-    try{
-      scope.launch {
+  override fun cancelVideo(id: String, promise: Promise) {
+    scope.launch {
+      try {
         val request = TruvideoSdkVideo.getRequestById(id)
-        request!!.cancel()
+        if (request == null) {
+          promise.reject("Exception", "Request not found for id: $id")
+          return@launch
+        }
+        request.cancel()
         promise.resolve(returnRequest(request))
+      } catch (e: truvideo.sdk.common.exceptions.TruvideoSdkException) {
+        // SDK throws this when status is idle/complete/error/cancelled
+        Log.e(NAME, "TruvideoSdkException in cancelVideo: ${e.message}", e)
+        promise.reject("TruvideoSdkException", e.message ?: "The request can't be cancelled")
+      } catch (e: Exception) {
+        Log.e(NAME, "Exception in cancelVideo: ${e.message}", e)
+        promise.reject("Exception", e.message ?: "Unknown error")
       }
-    }catch (e: Exception){
-      promise.reject("Exception",e.message)
     }
   }
 
