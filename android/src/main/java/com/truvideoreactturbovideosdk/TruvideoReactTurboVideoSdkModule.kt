@@ -486,15 +486,15 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
       return
     }
     mainPromise = promise
-    currentActivity!!.startActivity(
-      Intent(currentActivity, EditScreenActivity::class.java)
+    getCurrentActivity()!!.startActivity(
+      Intent(getCurrentActivity()!!, EditScreenActivity::class.java)
         .putExtra("videoUri", videoUri)
         .putExtra("resultPath", resultPath)
     )
   }
 
   override fun getResultPath(path: String?, promise: Promise?) {
-    val basePath  = currentActivity!!.filesDir
+    val basePath  = getCurrentActivity()!!.filesDir
     promise?.resolve( File("$basePath/$path").path)
   }
 
