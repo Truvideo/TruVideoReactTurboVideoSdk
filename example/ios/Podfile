@@ -38,5 +38,18 @@ target 'TruvideoReactTurboVideoSdkExample' do
       :mac_catalyst_enabled => false,
       # :ccache_enabled => true
     )
+
+    fmt_format_inl = File.join(__dir__, 'Pods', 'fmt', 'include', 'fmt', 'format-inl.h')
+    if File.exist?(fmt_format_inl)
+      contents = File.read(fmt_format_inl)
+      patched = contents
+        .gsub('fmt::format_to(it, FMT_STRING("{}{}"), message, SEP);', 'fmt::format_to(it, "{}{}", message, SEP);')
+        .gsub('fmt::format_to(it, FMT_STRING("{}{}"), ERROR_STR, error_code);', 'fmt::format_to(it, "{}{}", ERROR_STR, error_code);')
+        .gsub('fmt::format_to(out, FMT_STRING("{:x}"), value);', 'fmt::format_to(out, "{:x}", value);')
+        .gsub('fmt::format_to(out, FMT_STRING("{:08x}"), value);', 'fmt::format_to(out, "{:08x}", value);')
+        .gsub(%(fmt::format_to(out, FMT_STRING("p{}"),\n                           n.exp_ * detail::bigint::bigit_bits);), %(fmt::format_to(out, "p{}", n.exp_ * detail::bigint::bigit_bits);))
+
+      File.write(fmt_format_inl, patched) if patched != contents
+    end
   end
 end
