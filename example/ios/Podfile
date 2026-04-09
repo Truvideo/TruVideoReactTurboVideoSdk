@@ -10,6 +10,8 @@ require Pod::Executable.execute_command('node', ['-p',
 platform :ios, min_ios_version_supported
 prepare_react_native_project!
 
+core_sdk_path = File.expand_path('../../../TruVideoReactTurboCoreSdk', __dir__)
+
 linkage = ENV['USE_FRAMEWORKS']
 if linkage != nil
   Pod::UI.puts "Configuring Pod with #{linkage}ally linked Frameworks".green
@@ -18,6 +20,10 @@ end
 
 target 'TruvideoReactTurboVideoSdkExample' do
   config = use_native_modules!
+
+  if File.exist?(File.join(core_sdk_path, 'truvideo-react-turbo-core-sdk.podspec'))
+    pod 'truvideo-react-turbo-core-sdk', :path => core_sdk_path
+  end
 
   use_react_native!(
     :path => config[:reactNativePath],
@@ -50,6 +56,43 @@ target 'TruvideoReactTurboVideoSdkExample' do
         .gsub(%(fmt::format_to(out, FMT_STRING("p{}"),\n                           n.exp_ * detail::bigint::bigit_bits);), %(fmt::format_to(out, "p{}", n.exp_ * detail::bigint::bigit_bits);))
 
       File.write(fmt_format_inl, patched) if patched != contents
+    end
+
+    cxx17_targets = %w[
+      truvideo-react-turbo-core-sdk
+      truvideo-react-turbo-video-sdk
+      fmt
+    ]
+
+    installer.pods_project.targets.each do |target|
+      target.build_configurations.each do |build_configuration|
+        if cxx17_targets.include?(target.name)
+          build_configuration.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'c++17'
+        end
+
+        next unless target.name == 'fmt'
+
+        definitions = build_configuration.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] || ['$(inherited)']
+        definitions = [definitions] unless definitions.is_a?(Array)
+        unless definitions.include?('FMT_USE_CONSTEVAL=0')
+          definitions << 'FMT_USE_CONSTEVAL=0'
+        end
+        build_configuration.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] = definitions
+      end
+    end
+
+    installer.aggregate_targets.each do |aggregate_target|
+      aggregate_target.user_project.build_configurations.each do |build_configuration|
+        build_configuration.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'c++20'
+      end
+
+      aggregate_target.user_project.native_targets.each do |native_target|
+        native_target.build_configurations.each do |build_configuration|
+          build_configuration.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'c++20'
+        end
+      end
+
+      aggregate_target.user_project.save
     end
   end
 end
