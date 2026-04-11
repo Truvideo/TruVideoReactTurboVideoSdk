@@ -12,21 +12,7 @@ Pod::Spec.new do |s|
   s.authors      = package["author"]
 
   s.platforms    = { :ios => min_ios_version_supported }
-  s.prepare_command = <<-CMD
-    for fw in ios/xcframeworks/*.xcframework; do
-      plist="$fw/Info.plist"
-      if [ -f "$plist" ]; then
-        count=$(/usr/libexec/PlistBuddy -c "Print AvailableLibraries:" "$plist" 2>/dev/null | grep -c "Dict {" || echo 0)
-        for i in $(seq $((count-1)) -1 0); do
-          variant=$(/usr/libexec/PlistBuddy -c "Print AvailableLibraries:$i:SupportedPlatformVariant" "$plist" 2>/dev/null || echo "")
-          if [ "$variant" = "maccatalyst" ]; then
-            /usr/libexec/PlistBuddy -c "Delete AvailableLibraries:$i" "$plist"
-            rm -rf "${fw}/ios-arm64_x86_64-maccatalyst"
-          fi
-        done
-      fi
-    done
-  CMD
+
   s.source       = { :git => "https://github.com/akshay2801-rgb/TruVideoReactTurboVideoSdk.git", :tag => "#{s.version}" }
 
   s.source_files = [
@@ -48,6 +34,15 @@ Pod::Spec.new do |s|
     'ios/xcframeworks/libswscale.xcframework',
     'ios/xcframeworks/TruvideoSdkVideo.xcframework'
   ]
+  
+  s.pod_target_xcconfig = {
+    "EXCLUDED_ARCHS[sdk=maccatalyst*]" => "arm64 x86_64",
+    "SUPPORTS_MACCATALYST"             => "NO",
+  }
+  s.user_target_xcconfig = {
+    "EXCLUDED_ARCHS[sdk=maccatalyst*]" => "arm64 x86_64",
+    "SUPPORTS_MACCATALYST"             => "NO",
+  }
 
   s.dependency "truvideo-react-turbo-core-sdk"
   # s.dependency "truvideo-sdk-core/Video" ,'79.0.0'

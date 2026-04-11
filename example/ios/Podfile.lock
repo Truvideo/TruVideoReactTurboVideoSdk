@@ -1828,7 +1828,7 @@ SPEC CHECKSUMS:
   ReactCommon: 1bd2dc684d7992acbf0dfee887b89a57a1ead86d
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   truvideo-react-turbo-core-sdk: c7c3856e50d778906d8023ac61e8bc0111d3d393
-  truvideo-react-turbo-video-sdk: e74ab0cba8f3fa4da8088cdf4bacf7cd761a953e
+  truvideo-react-turbo-video-sdk: b7e7def96af2561e46ce3242b198f6fb767ccefd
   Yoga: 78d74e245ed67bb94275a1316cdc170b9b7fe884
 
 PODFILE CHECKSUM: 2842268617ee48bdda27c0822bf44c869cda6ad5
