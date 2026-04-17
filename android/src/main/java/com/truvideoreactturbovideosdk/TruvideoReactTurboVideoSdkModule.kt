@@ -13,6 +13,7 @@ import com.truvideo.sdk.video.model.TruvideoSdkVideoFileDescriptor
 import com.truvideo.sdk.video.model.TruvideoSdkVideoFrameRate
 import com.truvideo.sdk.video.model.TruvideoSdkVideoRequest
 import com.truvideo.sdk.video.model.TruvideoSdkVideoRequestStatus
+import com.truvideo.sdk.video.model.TruvideoSdkVideoRequestType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -358,6 +359,12 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
   }
 
   fun returnRequest(request : TruvideoSdkVideoRequest) : String{
+    val resolvedOutputPath = when (request.type) {
+      TruvideoSdkVideoRequestType.MERGE -> request.mergeData?.resultPath ?: request.mergeData?.outputPath
+      TruvideoSdkVideoRequestType.CONCAT -> request.concatData?.resultPath ?: request.concatData?.outputPath
+      TruvideoSdkVideoRequestType.ENCODE -> request.encodeData?.resultPath ?: request.encodeData?.outputPath
+    }
+
     return JSONObject().apply{
       put("id",request.id)
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -375,6 +382,8 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
         TruvideoSdkVideoRequestStatus.CANCELLED -> "cancelled"
       })
       put("type", request.type.name.lowercase())
+      put("outputPath", resolvedOutputPath)
+      put("errorMessage", request.errorMessage)
 
     }.toString()
   }

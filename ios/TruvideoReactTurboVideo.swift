@@ -376,12 +376,14 @@ import Combine
       case .cancelled: "cancelled"
       default:""
     }
-    let mainResponse: [String: String] = [
+    let mainResponse: [String: Any] = [
       "id": videoRequest.id.uuidString,
       "createdAt" : dateFormatter.string(from: videoRequest.createdAt),
       "status" : status,
       "type" : typeString,
-      "updatedAt" : dateFormatter.string(from: videoRequest.updatedAt)
+      "updatedAt" : dateFormatter.string(from: videoRequest.updatedAt),
+      "outputPath": videoRequest.outputPath?.path as Any,
+      "errorMessage": videoRequest.errorMessage as Any
     ]
     print("Received request:", videoRequest)
     do{
@@ -722,12 +724,14 @@ import Combine
       print("🔵 [JSON] Status: \(statusString)")
       
       // Build response dictionary
-      let mainResponse: [String: String] = [
+      let mainResponse: [String: Any] = [
         "id": videoRequest.id.uuidString,
         "createdAt": dateFormatter.string(from: videoRequest.createdAt),
         "status": statusString,
         "type": typeString,
-        "updatedAt": dateFormatter.string(from: videoRequest.updatedAt)
+        "updatedAt": dateFormatter.string(from: videoRequest.updatedAt),
+        "outputPath": videoRequest.outputPath?.path as Any,
+        "errorMessage": videoRequest.errorMessage as Any
       ]
       
       print("🔵 [JSON] Response dictionary: \(mainResponse)")
@@ -773,4 +777,3 @@ import Combine
         }
     }
 }
-

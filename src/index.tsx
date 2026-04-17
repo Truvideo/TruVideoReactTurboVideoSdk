@@ -147,6 +147,9 @@ export interface BuilderResponse {
   status: VideoStatus;
   type: BuilderType;
   updatedAt: string;
+  outputPath?: string;
+  errorMessage?: string | null;
+
 }
 
 export class BuilderRequest {
