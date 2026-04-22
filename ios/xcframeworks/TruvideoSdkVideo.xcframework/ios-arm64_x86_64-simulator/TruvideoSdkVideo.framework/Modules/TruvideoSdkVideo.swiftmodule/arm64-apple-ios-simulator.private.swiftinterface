@@ -9,7 +9,6 @@ import CoreData
 import Foundation
 import Swift
 import SwiftUI
-@_spi(Internal) import TruVideoRuntime
 import TruvideoSdk
 @_exported import TruvideoSdkVideo
 import UIKit

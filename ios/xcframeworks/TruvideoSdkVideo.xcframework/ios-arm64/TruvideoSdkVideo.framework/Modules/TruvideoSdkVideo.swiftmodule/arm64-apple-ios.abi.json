@@ -12291,12 +12291,12 @@
       },
       {
         "kind": "Import",
-        "name": "TruVideoRuntime",
-        "printedName": "TruVideoRuntime",
+        "name": "Registry",
+        "printedName": "Registry",
         "declKind": "Import",
         "moduleName": "TruvideoSdkVideo",
         "declAttributes": [
-          "SPIAccessControl"
+          "AccessControl"
         ]
       },
       {
@@ -12842,28 +12842,28 @@
     {
       "filePath": "\/Users\/runner\/work\/truvideo-ios-sdk\/truvideo-ios-sdk\/Libraries\/Plugins\/External\/Video\/Sources\/Shared\/FFMPEGCommands\/FFMPEGCommandGenerator.swift",
       "kind": "IntegerLiteral",
-      "offset": 3624,
+      "offset": 3867,
       "length": 1,
       "value": "1"
     },
     {
       "filePath": "\/Users\/runner\/work\/truvideo-ios-sdk\/truvideo-ios-sdk\/Libraries\/Plugins\/External\/Video\/Sources\/Shared\/FFMPEGCommands\/FFMPEGCommandGenerator.swift",
       "kind": "IntegerLiteral",
-      "offset": 3655,
+      "offset": 3898,
       "length": 5,
       "value": "32000"
     },
     {
       "filePath": "\/Users\/runner\/work\/truvideo-ios-sdk\/truvideo-ios-sdk\/Libraries\/Plugins\/External\/Video\/Sources\/Shared\/FFMPEGCommands\/FFMPEGCommandGenerator.swift",
       "kind": "IntegerLiteral",
-      "offset": 3685,
+      "offset": 3928,
       "length": 3,
       "value": "320"
     },
     {
       "filePath": "\/Users\/runner\/work\/truvideo-ios-sdk\/truvideo-ios-sdk\/Libraries\/Plugins\/External\/Video\/Sources\/Shared\/FFMPEGCommands\/FFMPEGCommandGenerator.swift",
       "kind": "StringLiteral",
-      "offset": 3715,
+      "offset": 3958,
       "length": 5,
       "value": "\"wav\""
     },
@@ -13073,42 +13073,42 @@
     {
       "filePath": "\/Users\/runner\/work\/truvideo-ios-sdk\/truvideo-ios-sdk\/Libraries\/Plugins\/External\/Video\/Sources\/TruvideoSdkVideo.swift",
       "kind": "StringLiteral",
-      "offset": 5515,
+      "offset": 5934,
       "length": 4,
       "value": "\"24\""
     },
     {
       "filePath": "\/Users\/runner\/work\/truvideo-ios-sdk\/truvideo-ios-sdk\/Libraries\/Plugins\/External\/Video\/Sources\/TruvideoSdkVideo.swift",
       "kind": "StringLiteral",
-      "offset": 5545,
+      "offset": 5964,
       "length": 4,
       "value": "\"25\""
     },
     {
       "filePath": "\/Users\/runner\/work\/truvideo-ios-sdk\/truvideo-ios-sdk\/Libraries\/Plugins\/External\/Video\/Sources\/TruvideoSdkVideo.swift",
       "kind": "StringLiteral",
-      "offset": 5571,
+      "offset": 5990,
       "length": 4,
       "value": "\"30\""
     },
     {
       "filePath": "\/Users\/runner\/work\/truvideo-ios-sdk\/truvideo-ios-sdk\/Libraries\/Plugins\/External\/Video\/Sources\/TruvideoSdkVideo.swift",
       "kind": "StringLiteral",
-      "offset": 5596,
+      "offset": 6015,
       "length": 4,
       "value": "\"50\""
     },
     {
       "filePath": "\/Users\/runner\/work\/truvideo-ios-sdk\/truvideo-ios-sdk\/Libraries\/Plugins\/External\/Video\/Sources\/TruvideoSdkVideo.swift",
       "kind": "StringLiteral",
-      "offset": 5621,
+      "offset": 6040,
       "length": 4,
       "value": "\"60\""
     },
     {
       "filePath": "\/Users\/runner\/work\/truvideo-ios-sdk\/truvideo-ios-sdk\/Libraries\/Plugins\/External\/Video\/Sources\/TruvideoSdkVideo.swift",
       "kind": "StringLiteral",
-      "offset": 5645,
+      "offset": 6064,
       "length": 3,
       "value": "\"0\""
     },
@@ -13360,14 +13360,14 @@
     {
       "filePath": "\/Users\/runner\/work\/truvideo-ios-sdk\/truvideo-ios-sdk\/Libraries\/Plugins\/External\/Video\/Sources\/Editor\/Presentation\/TruvideoSdkVideoEditorViewModel.swift",
       "kind": "IntegerLiteral",
-      "offset": 3787,
+      "offset": 3836,
       "length": 2,
       "value": "12"
     },
     {
       "filePath": "\/Users\/runner\/work\/truvideo-ios-sdk\/truvideo-ios-sdk\/Libraries\/Plugins\/External\/Video\/Sources\/Editor\/Presentation\/TruvideoSdkVideoEditorViewModel.swift",
       "kind": "IntegerLiteral",
-      "offset": 3936,
+      "offset": 3985,
       "length": 2,
       "value": "12"
     },
@@ -13474,7 +13474,7 @@
       "kind": "StringLiteral",
       "offset": 119,
       "length": 8,
-      "value": "\"79.0.0\""
+      "value": "\"79.0.1\""
     },
     {
       "filePath": "\/Users\/runner\/work\/truvideo-ios-sdk\/truvideo-ios-sdk\/Libraries\/Plugins\/External\/Video\/Sources\/Version.swift",
