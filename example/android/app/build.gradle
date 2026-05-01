@@ -116,6 +116,13 @@ android {
         jvmTarget = "17"
         freeCompilerArgs += ["-Xskip-metadata-version-check"]
     }
+
+    // bcprov-jdk18on and jspecify both ship this path; Android requires a single winner at merge time.
+    packaging {
+        resources {
+            pickFirsts += "META-INF/versions/9/OSGI-INF/MANIFEST.MF"
+        }
+    }
 }
 
 configurations.all {

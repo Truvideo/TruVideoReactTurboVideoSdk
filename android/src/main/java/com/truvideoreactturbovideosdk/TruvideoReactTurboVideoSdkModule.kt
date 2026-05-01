@@ -14,6 +14,7 @@ import com.truvideo.sdk.video.model.TruvideoSdkVideoFrameRate
 import com.truvideo.sdk.video.model.TruvideoSdkVideoRequest
 import com.truvideo.sdk.video.model.TruvideoSdkVideoRequestStatus
 import com.truvideo.sdk.video.model.TruvideoSdkVideoRequestType
+import com.truvideo.sdk.model.exceptions.TruvideoSdkException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -174,7 +175,7 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
         }
         promise?.resolve(mainResponse.toString())
 
-      } catch (e: truvideo.sdk.common.exceptions.TruvideoSdkException) {
+      } catch (e: TruvideoSdkException) {
         Log.e(NAME, "TruvideoSdkException in getVideoInfo: ${e.message}", e)
         promise?.reject("TruvideoSdkException", e.message ?: "Unknown SDK error")
       } catch (exception: Exception) {
@@ -296,7 +297,7 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
         }
         request.process()
         promise.resolve(returnRequest(request))
-      } catch (e: truvideo.sdk.common.exceptions.TruvideoSdkException) {
+      } catch (e: TruvideoSdkException) {
         Log.e(NAME, "TruvideoSdkException in processVideo: ${e.message}", e)
         promise.reject("TruvideoSdkException", e.message ?: "Unknown SDK error")
       } catch (e: Exception) {
@@ -315,7 +316,7 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
           return@launch
         }
         promise.resolve(returnRequest(request))
-      } catch (e: truvideo.sdk.common.exceptions.TruvideoSdkException) {
+      } catch (e: TruvideoSdkException) {
         Log.e(NAME, "TruvideoSdkException in getRequestById: ${e.message}", e)
         promise.reject("TruvideoSdkException", e.message ?: "Unknown SDK error")
       } catch (e: Exception) {
@@ -347,7 +348,7 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
         }
         request.cancel()
         promise.resolve(returnRequest(request))
-      } catch (e: truvideo.sdk.common.exceptions.TruvideoSdkException) {
+      } catch (e: TruvideoSdkException) {
         // SDK throws this when status is idle/complete/error/cancelled
         Log.e(NAME, "TruvideoSdkException in cancelVideo: ${e.message}", e)
         promise.reject("TruvideoSdkException", e.message ?: "The request can't be cancelled")
@@ -447,7 +448,7 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
 
                 promise?.resolve(result)
 
-            } catch (e: truvideo.sdk.common.exceptions.TruvideoSdkException) {
+            } catch (e: TruvideoSdkException) {
                 // Specific handling for SDK exceptions
                 Log.e(NAME, "TruvideoSdkException in generateThumbnail: ${e.message}", e)
                 promise?.reject("TruvideoSdkException", e.message ?: "Unknown SDK error")
@@ -478,7 +479,7 @@ class TruvideoReactTurboVideoSdkModule(reactContext: ReactApplicationContext) :
                 )
                 promise?.resolve(result)
 
-            } catch (e: truvideo.sdk.common.exceptions.TruvideoSdkException) {
+            } catch (e: TruvideoSdkException) {
                 Log.e(NAME, "TruvideoSdkException in cleanNoise: ${e.message}", e)
                 promise?.reject("TruvideoSdkException", e.message ?: "Unknown SDK error")
 
