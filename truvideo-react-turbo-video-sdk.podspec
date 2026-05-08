@@ -84,8 +84,7 @@ Pod::Spec.new do |s|
 
   # ✅ KEY FIX — propagate same restriction to the app target
   s.user_target_xcconfig = {
-    "EXCLUDED_ARCHS[sdk=maccatalyst*]"       => "arm64 x86_64",
-    "SUPPORTS_MACCATALYST"                   => "NO",
+    "EXCLUDED_ARCHS[sdk=maccatalyst*]"       => "arm64 x86_64"
   }
 
   s.dependency "truvideo-react-turbo-core-sdk"

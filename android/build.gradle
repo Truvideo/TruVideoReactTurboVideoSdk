@@ -111,18 +111,9 @@ repositories {
 
 def kotlin_version = getExtOrDefault("kotlinVersion")
 
-def media3Version = "1.9.2"
-
 // Force Kotlin stdlib version - allow 2.2.0 for Truvideo SDK compatibility
 configurations.all {
   resolutionStrategy {
-    eachDependency { DependencyResolveDetails details ->
-      if (details.requested.group == 'androidx.media3') {
-        details.useVersion(media3Version)
-        details.because("Avoid mixed Media3 runtime versions during video transformer merge/encode")
-      }
-    }
-
     // Don't force downgrade - allow SDK to use 2.2.0 if needed
     // but ensure minimum version compatibility
     eachDependency { DependencyResolveDetails details ->
