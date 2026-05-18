@@ -1,6 +1,6 @@
 {
   "name": "@trunpm/truvideo-react-turbo-video-sdk",
-  "version": "2.3.1-beta-3",
+  "version": "2.3.1",
   "description": "Video Module",
   "source": "./src/index.tsx",
   "main": "./lib/commonjs/index.js",
