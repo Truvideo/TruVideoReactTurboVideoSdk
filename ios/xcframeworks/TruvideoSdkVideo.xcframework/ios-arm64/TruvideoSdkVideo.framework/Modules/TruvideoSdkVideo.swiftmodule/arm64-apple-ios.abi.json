@@ -22990,7 +22990,7 @@
       "kind": "StringLiteral",
       "offset": 119,
       "length": 7,
-      "value": "\"1.0.1\""
+      "value": "\"1.0.0\""
     },
     {
       "filePath": "\/Users\/runner\/work\/truvideo-ios-sdk\/truvideo-ios-sdk\/Libraries\/Plugins\/External\/Video\/Sources\/Version.swift",
