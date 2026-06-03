@@ -1,7 +1,28 @@
 require "json"
+require "fileutils"
 
 package = JSON.parse(File.read(File.join(__dir__, "package.json")))
 folly_compiler_flags = '-DFOLLY_NO_CONFIG -DFOLLY_MOBILE=1 -DFOLLY_USE_LIBCPP=1 -Wno-comma -Wno-shorten-64-to-32'
+
+ensure_catalyst_binary_links = lambda do |xcframeworks_dir|
+  Dir.glob(File.join(xcframeworks_dir, "*.xcframework", "*maccatalyst*", "*.framework")).each do |framework_path|
+    versions_path = File.join(framework_path, "Versions")
+    version_path = File.join(versions_path, "A")
+    framework_name = File.basename(framework_path, ".framework")
+    versioned_binary = File.join(version_path, framework_name)
+    next unless File.file?(versioned_binary)
+
+    current_link = File.join(versions_path, "Current")
+    FileUtils.ln_s("A", current_link) unless File.exist?(current_link) || File.symlink?(current_link)
+
+    binary_link = File.join(framework_path, framework_name)
+    next if File.exist?(binary_link) || File.symlink?(binary_link)
+
+    FileUtils.ln_s(File.join("Versions", "Current", framework_name), binary_link)
+  end
+end
+
+ensure_catalyst_binary_links.call(File.join(__dir__, "ios", "xcframeworks"))
 
 Pod::Spec.new do |s|
   s.name         = "truvideo-react-turbo-video-sdk"
@@ -23,6 +44,7 @@ Pod::Spec.new do |s|
     "ios/generated/**/*.h"
   ]
   # s.dependency "truvideo-sdk-video" ,'78.1.2'
+  
   s.vendored_frameworks = [
     'ios/xcframeworks/TruvideoSdkVideo.xcframework',
     'ios/xcframeworks/ffmpegkit.xcframework',
